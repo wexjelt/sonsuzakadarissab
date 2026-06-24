@@ -1,530 +1,257 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Her Şeyin Başladığı Gün...</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body, html {
-            background-color: #1a0f1a;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            position: relative;
-            overscroll-behavior: none;
-            font-family: 'Press Start 2P', monospace;
-        }
-        canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            image-rendering: pixelated;
-        }
-        
-        /* --- SORU EKRANI KATMANI --- */
-        #quiz-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #1a0f1a;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .quiz-box {
-            background: #2b1625;
-            border: 6px solid #ff66aa;
-            outline: 6px solid #000;
-            box-shadow: inset -6px -6px 0 #150a12, inset 6px 6px 0 #ff99cc;
-            padding: 35px 20px;
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-        }
-        .quiz-title {
-            color: #fff;
-            font-size: 11px;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            text-shadow: 3px 3px 0 #000, 0 0 5px #ff55aa;
-        }
-        .quiz-input {
-            width: 100%;
-            background: #000;
-            border: 4px solid #ff55aa;
-            color: #ff99cc;
-            padding: 14px;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            text-align: center;
-            outline: none;
-            margin-bottom: 25px;
-            box-shadow: inset 4px 4px 0 #150a12;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        .quiz-btn {
-            background: #ff55aa;
-            color: #fff;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
-            padding: 12px 20px;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: inset -4px -4px 0 #b32d6b;
-            width: 100%;
-        }
-        .quiz-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: inset 2px 2px 0 #b32d6b;
-        }
-        .error-msg {
-            color: #ff4444;
-            font-size: 9px;
-            margin-top: 20px;
-            min-height: 12px;
-            opacity: 0;
-            text-shadow: 2px 2px 0 #000;
-            transition: opacity 0.3s;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Her Şeyin Başladığı Gün...</title>
 
-        /* --- OYUN ALANI KATMANI --- */
-        #ui-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
-        }
-        .instruction {
-            font-size: 9px;
-            color: #ff99cc;
-            text-align: center;
-            line-height: 1.8;
-            text-shadow: 2px 2px 0 #000, 0 0 5px #ff55aa;
-            pointer-events: none;
-        }
-        #stage {
-            position: relative;
-            width: 100%;
-            flex-grow: 1;
-            touch-action: none;
-        }
-        #firework-box {
-            position: absolute;
-            bottom: 25%; left: 50%;
-            transform: translateX(-50%);
-            width: 64px; height: 80px;
-            background: #2b1625;
-            border: 4px solid #ff55aa;
-            outline: 4px solid #000;
-            box-shadow: inset -6px -6px 0 #150a12;
-        }
-        #firework-box::after {
-            content: '';
-            position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
-            background: repeating-linear-gradient(45deg, #ff3388, #ff3388 10px, #150a12 10px, #150a12 20px);
-        }
-        #fuse {
-            position: absolute;
-            top: -24px; left: 50%;
-            width: 8px; height: 24px;
-            background: #444;
-            transform: translateX(-50%);
-        }
-        #fuse::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
-            background-size: 100% 8px;
-        }
-        #fuse.burning::before {
-            background-image: linear-gradient(to bottom, #ff3388 50%, #ffcc00 50%);
-            animation: fuseBurn 1.5s linear forwards;
-        }
-        @keyframes fuseBurn {
-            0% { height: 100%; }
-            100% { height: 0%; }
-        }
-        #lighter {
-            position: absolute;
-            bottom: 8%; left: 50%;
-            transform: translateX(-50%);
-            width: 44px; height: 64px;
-            background: #ff55aa;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #b32d6b;
-            z-index: 100;
-            touch-action: none;
-        }
-        #lighter-top {
-            position: absolute;
-            top: -12px; left: 6px;
-            width: 24px; height: 12px;
-            background: #dddddd;
-            border: 4px solid #000;
-            border-bottom: none;
-        }
-        #flame {
-            position: absolute;
-            top: -20px; left: 10px;
-            width: 12px; height: 16px;
-            background: #ff3388;
-            outline: 2px solid #ff99cc;
-            opacity: 0;
-            transform: scale(0);
-        }
-        #lighter.ignited #flame {
-            opacity: 1;
-            transform: scale(1);
-            animation: pixelFlicker 0.15s infinite steps(2);
-        }
-        @keyframes pixelFlicker {
-            0% { transform: scale(1) translate(2px, 0); background: #ff3388; }
-            100% { transform: scale(1.1) translate(-2px, -2px); background: #ff77aa; }
-        }
-        
-        /* --- AŞK MESAJI --- */
-        #text-overlay {
-            position: absolute;
-            top: 42%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            text-align: center;
-            width: 90%;
-            pointer-events: none;
-        }
-        .love-message {
-            font-family: 'Great Vibes', cursive;
-            font-size: 3.2rem;
-            color: #ffffff;
-            opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255, 51, 136, 0.7), 0 0 30px rgba(255, 153, 204, 0.5);
-            transition: opacity 2.5s ease, transform 2.5s ease;
-            transform: translate(-50%, -50%) scale(0.9);
-            position: absolute;
-            left: 50%; width: 100%;
-        }
-        .love-message.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.02);
-        }
-        #replay-btn {
-            position: absolute;
-            bottom: 8%; left: 50%;
-            transform: translateX(-50%) scale(0);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 10px;
-            padding: 12px 20px;
-            background: #ff55aa;
-            color: #fff;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #b32d6b;
-            cursor: pointer;
-            z-index: 105;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+body,html{background:#1a0f1a;overflow:hidden;width:100%;height:100%;font-family:'Press Start 2P',monospace;}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+
+#quiz-overlay{
+position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#1a0f1a;z-index:200;
+}
+.quiz-box{background:#2b1625;border:6px solid #ff66aa;padding:30px;text-align:center;max-width:360px;width:90%;}
+.quiz-title{color:#fff;font-size:11px;margin-bottom:20px;}
+.quiz-input{width:100%;padding:12px;font-family:inherit;text-align:center;}
+.quiz-btn{width:100%;margin-top:10px;padding:12px;background:#ff55aa;color:#fff;border:none;}
+
+#ui-container{
+position:absolute;inset:0;display:none;z-index:10;flex-direction:column;align-items:center;
+}
+
+#stage{position:relative;flex:1;width:100%;}
+
+#firework-box{
+position:absolute;bottom:25%;left:50%;transform:translateX(-50%);
+width:64px;height:80px;background:#2b1625;border:4px solid #ff55aa;
+}
+
+#fuse{position:absolute;top:-24px;left:50%;width:8px;height:24px;background:#444;transform:translateX(-50%);}
+#fuse.burning{background:#ff3388;}
+
+#lighter{
+position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
+width:44px;height:64px;background:#ff55aa;
+}
+
+#flame{
+position:absolute;top:-20px;left:10px;width:12px;height:16px;background:#ff3388;
+opacity:0;
+}
+
+#lighter.ignited #flame{opacity:1;}
+
+#text-overlay{
+position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);
+text-align:center;width:100%;
+}
+
+.love-message{
+font-family:'Great Vibes',cursive;font-size:3rem;color:#fff;opacity:0;transition:2s;
+}
+
+.love-message.show{opacity:1;}
+
+#replay-btn{
+position:absolute;bottom:8%;left:50%;transform:translateX(-50%) scale(0);
+padding:12px;background:#ff55aa;color:#fff;border:none;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="quiz-overlay">
-        <div class="quiz-box">
-            <div class="quiz-title">Her şeyin başladığı gün?</div>
-            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
-            <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
-            <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
-        </div>
-    </div>
+<div id="quiz-overlay">
+  <div class="quiz-box">
+    <div class="quiz-title">Her şeyin başladığı gün?</div>
+    <input id="quiz-answer" class="quiz-input">
+    <button id="quiz-submit-btn" class="quiz-btn">GİRİŞ</button>
+    <div id="quiz-error" style="color:red;font-size:10px;opacity:0;">Yanlış</div>
+  </div>
+</div>
 
-    <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 
-    <div id="ui-container">
-        <div class="instruction" id="info-text">Çakmağa Dokun ve Yak!<br>Sonra Sürükleyip Fitili Ateşle.</div>
-        <div id="stage">
-            <div id="firework-box"><div id="fuse"></div></div>
-            <div id="lighter"><div id="flame"></div><div id="lighter-top"></div></div>
-        </div>
-    </div>
+<div id="ui-container">
+  <div id="stage">
+    <div id="firework-box"><div id="fuse"></div></div>
+    <div id="lighter"><div id="flame"></div></div>
+  </div>
+</div>
 
-    <div id="text-overlay">
-        <div class="love-message" id="msg">Seni göğe baktığında gördüğün ay ve yıldızlar kadar seviyorum...</div>
-    </div>
+<div id="text-overlay">
+  <div class="love-message" id="msg">Seni seviyorum...</div>
+</div>
 
-    <button id="replay-btn">TEKRAR OYNAT</button>
+<button id="replay-btn">REPLAY</button>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const lighter = document.getElementById('lighter');
-        const fuse = document.getElementById('fuse');
-        const uiContainer = document.getElementById('ui-container');
-        const infoText = document.getElementById('info-text');
-        const msg = document.getElementById('msg');
-        const replayBtn = document.getElementById('replay-btn');
-        const quizOverlay = document.getElementById('quiz-overlay');
-        const quizAnswer = document.getElementById('quiz-answer');
-        const quizSubmitBtn = document.getElementById('quiz-submit-btn');
-        const quizError = document.getElementById('quiz-error');
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
 
-        let isIgnited = false;
-        let isDragging = false;
-        let particles = [];
-        let rockets = [];
-        let animationFrame;
-        let timeline = 0;
-        let showActive = false;
-        let finalRocketLaunched = false;
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+resize();addEventListener("resize",resize);
 
-        const textGrid = {
-            '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
-            'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
-            'S': [[0,1],[0,2],[0,3],[1,0],[2,0],[3,1],[3,2],[4,3],[5,3],[6,0],[6,1],[6,2]],
-            'A': [[0,2],[1,1],[1,3],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,4],[5,0],[5,4],[6,0],[6,4]],
-            'B': [[0,0],[0,1],[0,2],[0,3],[1,0],[1,4],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[4,0],[4,4],[5,0],[5,4],[6,0],[6,1],[6,2],[6,3]]
-        };
-        const wordSequence = ["#", "İ", "S", "S", "A", "B"];
+const quizOverlay=document.getElementById("quiz-overlay");
+const uiContainer=document.getElementById("ui-container");
+const lighter=document.getElementById("lighter");
+const fuse=document.getElementById("fuse");
+const msg=document.getElementById("msg");
+const replayBtn=document.getElementById("replay-btn");
 
-        function forceResize() {
-            canvas.width = window.innerWidth || screen.width;
-            canvas.height = window.innerHeight || screen.height;
-        }
-        window.addEventListener('resize', forceResize);
-        forceResize();
+let isIgnited=false;
+let isDragging=false;
+let particles=[];
+let rockets=[];
+let showActive=false;
+let timeline=0;
+let loopStarted=false;
 
-        // CEVABI 09.03.2026 FORMATINA GÖRE DOĞRULAYAN YENİ SİSTEM
-        function handleVerification() {
-            quizAnswer.blur();
+/* QUIZ */
+document.getElementById("quiz-submit-btn").onclick=()=>{
+let v=document.getElementById("quiz-answer").value.replace(/[^0-9]/g,"");
+if(v==="09032026"||v==="932026"){
+quizOverlay.style.display="none";
+uiContainer.style.display="flex";
+startLoop();
+}else{
+document.getElementById("quiz-error").style.opacity=1;
+setTimeout(()=>document.getElementById("quiz-error").style.opacity=0,2000);
+}
+};
 
-            // Girdiyi temizle (noktaları temizler ve saf rakamları karşılaştırır)
-            let text = quizAnswer.value.trim().replace(/[^0-9]/g, '');
+/* POINTER */
+lighter.addEventListener("pointerdown",(e)=>{
+e.preventDefault();
+if(!isIgnited){
+isIgnited=true;
+lighter.classList.add("ignited");
 
-            // "09032026" veya "932026" girişlerini doğru kabul eder
-            if (text === "09032026" || text === "932026") {
-                quizOverlay.style.display = "none";
-                uiContainer.style.display = "flex";
-                forceResize();
-            } else {
-                quizError.style.opacity = '1';
-                quizAnswer.value = "";
-                setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
-            }
-        }
+const r=lighter.getBoundingClientRect();
+lighter.style.bottom="auto";
+lighter.style.top=r.top+"px";
+lighter.style.left=r.left+"px";
+}
 
-        quizSubmitBtn.onclick = handleVerification;
-        quizAnswer.onkeypress = function(e) {
-            if (e.key === 'Enter') handleVerification();
-        };
+isDragging=true;
+lighter.setPointerCapture(e.pointerId);
+});
 
-        // --- POINTER EVENTS GÜVENLİ SÜRÜKLEME ---
-        let startX = 0, startY = 0;
+lighter.addEventListener("pointermove",(e)=>{
+if(!isDragging)return;
 
-        function onPointerDown(e) {
-            e.preventDefault();
-            if (!isIgnited) {
-                isIgnited = true;
-                lighter.classList.add('ignited');
-                infoText.innerHTML = "Harika! Şimdi Sürükle<br>ve Üstteki Fitili Yak.";
-                const rect = lighter.getBoundingClientRect();
-                lighter.style.transform = 'none';
-                lighter.style.left = rect.left + 'px';
-                lighter.style.top = rect.top + 'px';
-            }
-            isDragging = true;
-            startX = e.clientX - lighter.offsetLeft;
-            startY = e.clientY - lighter.offsetTop;
-            lighter.setPointerCapture(e.pointerId);
-        }
+let x=e.clientX-22;
+let y=e.clientY-30;
 
-        function onPointerMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            let currentX = e.clientX - startX;
-            let currentY = e.clientY - startY;
-            
-            if(currentX < 0) currentX = 0;
-            if(currentX > window.innerWidth - 44) currentX = window.innerWidth - 44;
-            lighter.style.left = currentX + 'px';
-            lighter.style.top = currentY + 'px';
+lighter.style.left=x+"px";
+lighter.style.top=y+"px";
 
-            const fRect = fuse.getBoundingClientRect();
-            const flameRect = document.getElementById('flame').getBoundingClientRect();
-            if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
-                flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
-                triggerSequence();
-            }
-        }
+/* FIX COLLISION */
+const f=fuse.getBoundingClientRect();
+const l=lighter.getBoundingClientRect();
 
-        function onPointerUp(e) {
-            if (isDragging) {
-                isDragging = false;
-                lighter.releasePointerCapture(e.pointerId);
-            }
-        }
+if(l.left<f.right&&l.right>f.left&&l.top<f.bottom&&l.bottom>f.top){
+trigger();
+}
+});
 
-        lighter.addEventListener('pointerdown', onPointerDown);
-        lighter.addEventListener('pointermove', onPointerMove);
-        lighter.addEventListener('pointerup', onPointerUp);
-        lighter.addEventListener('pointercancel', onPointerUp);
+lighter.addEventListener("pointerup",()=>isDragging=false);
 
-        function triggerSequence() {
-            isDragging = false;
-            lighter.style.display = 'none';
-            fuse.classList.add('burning');
-            infoText.style.opacity = '0';
-            setTimeout(() => {
-                uiContainer.style.display = 'none';
-                showActive = true;
-                timeline = 0;
-                loop();
-            }, 1500);
-        }
+/* TRIGGER */
+function trigger(){
+lighter.style.display="none";
+fuse.classList.add("burning");
+showActive=true;
+msg.classList.add("show");
+}
 
-        // --- PIXEL PARÇACIK MOTORU ---
-        class MinecraftLoveParticle {
-            constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
-                this.x = x; this.y = y;
-                this.vx = vx; this.vy = vy;
-                this.color = color;
-                this.size = size; 
-                this.fade = fade;
-                this.gravity = gravity;
-                this.alpha = 1;
-            }
-            update() {
-                this.vx *= 0.94; this.vy *= 0.94;
-                this.vy += this.gravity;
-                this.x += this.vx; this.y += this.vy;
-                this.alpha -= this.fade;
-            }
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
-                ctx.restore();
-            }
-        }
+/* PARTICLE */
+class P{
+constructor(x,y,vx,vy,c){
+this.x=x;this.y=y;this.vx=vx;this.vy=vy;
+this.c=c;this.a=1;
+}
+update(){
+this.x+=this.vx;
+this.y+=this.vy;
+this.vy+=0.02;
+this.a-=0.02;
+}
+draw(){
+ctx.globalAlpha=this.a;
+ctx.fillStyle=this.c;
+ctx.fillRect(this.x,this.y,4,4);
+ctx.globalAlpha=1;
+}
+}
 
-        class Rocket {
-            constructor(startX, startY, targetY, isFinal = false) {
-                this.x = startX; this.y = startY; this.targetY = targetY;
-                this.isFinal = isFinal;
-                this.vy = isFinal ? -4.5 : -Math.random() * 3 - 5;
-                this.alive = true;
-            }
-            update() {
-                this.y += this.vy;
-                if (this.y <= this.targetY) {
-                    this.alive = false;
-                    if (this.isFinal) {
-                        explodeFinalText(this.x, this.y);
-                    } else {
-                        explodeStandard(this.x, this.y);
-                    }
-                }
-                if (Math.random() < 0.3) {
-                    particles.push(new MinecraftLoveParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#ffb3d9', 4, 0.05, 0.02));
-                }
-            }
-            draw() {
-                ctx.save();
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 2, this.y, 4, 12);
-                ctx.restore();
-            }
-        }
+/* ROCKET */
+class R{
+constructor(){
+this.x=Math.random()*canvas.width;
+this.y=canvas.height;
+this.vy=-6;
+}
+update(){
+this.y+=this.vy;
+if(Math.random()<0.3){
+particles.push(new P(this.x,this.y,Math.random()-0.5,Math.random()-0.5,"#ff66aa"));
+}
+if(this.y<canvas.height*0.3){
+for(let i=0;i<40;i++){
+particles.push(new P(this.x,this.y,Math.random()-0.5,Math.random()-0.5,"#fff"));
+}
+this.dead=true;
+}
+}
+draw(){
+ctx.fillStyle="#fff";
+ctx.fillRect(this.x,this.y,3,10);
+}
+}
 
-        function explodeStandard(cx, cy) {
-            const colors = ['#ff3388', '#ff66aa', '#ffb3d9', '#ff0055', '#ffffff', '#e60073'];
-            const chosenColor = colors[Math.floor(Math.random() * colors.length)];
-            const isHeart = Math.random() < 0.5;
+/* LOOP FIX */
+function loop(){
+if(!showActive)return;
 
-            if (isHeart) {
-                for (let angle = 0; angle < Math.PI * 2; angle += 0.09) {
-                    const r = 4.5;
-                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.12;
-                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.12;
-                    particles.push(new MinecraftLoveParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.01 + 0.006, 0.03));
-                }
-            } else {
-                for (let i = 0; i < 55; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 5 + 1;
-                    particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01, 0.05));
-                }
-            }
-        }
+requestAnimationFrame(loop);
+ctx.fillStyle="rgba(26,15,26,0.2)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        function explodeFinalText(cx, cy) {
-            const pixelSize = Math.max(4, Math.min(8, window.innerWidth / 60)); 
-            const charWidth = 6 * pixelSize; 
-            const spacing = 3 * pixelSize; 
-            const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
-            let startX = cx - (totalWidth / 2);
+timeline++;
 
-            wordSequence.forEach((char) => {
-                const matrix = textGrid[char];
-                if (matrix) {
-                    matrix.forEach(([row, col]) => {
-                        const px = startX + (col * pixelSize);
-                        const py = cy + (row * pixelSize) - (3.5 * pixelSize);
-                        const color = char === '#' ? '#ffb3d9' : '#ff0055';
-                        
-                        particles.push(new MinecraftLoveParticle(
-                            px, py, 
-                            Math.random() * 0.06 - 0.03, Math.random() * 0.06 - 0.03, 
-                            color, pixelSize, 0.0003, 0.001
-                        ));
-                    });
-                }
-                startX += charWidth + spacing;
-            });
+if(timeline%60===0)rockets.push(new R());
 
-            for (let i = 0; i < 80; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 7 + 2;
-                particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.01 + 0.005, 0.04));
-            }
-        }
+rockets.forEach((r,i)=>{
+r.update();r.draw();
+if(r.dead)rockets.splice(i,1);
+});
 
-        function loop() {
-            if (!showActive) return;
-            animationFrame = requestAnimationFrame(loop);
-            
-            ctx.fillStyle = 'rgba(26, 15, 26, 0.2)'; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+/* FIXED PARTICLES LOOP */
+for(let i=particles.length-1;i>=0;i--){
+particles[i].update();
+particles[i].draw();
+if(particles[i].a<=0)particles.splice(i,1);
+}
+}
 
-            timeline++;
+function startLoop(){
+if(loopStarted)return;
+loopStarted=true;
+loop();
+}
 
-            if (timeline % 50 === 1 && timeline < 320) {
-                rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.35) + canvas.height * 0.1));
-            }
+function triggerLoopStart(){
+startLoop();
+}
 
-            if (timeline === 140) { msg.classList.add('show'); }
+replayBtn.onclick=()=>location.reload();
+</script>
 
-            if (timeline === 380 && !finalRocketLaunched) {
-                finalRocketLaunched = true;
-                rockets.push(new Rocket(canvas.width / 2, c
+</body>
+</html>
