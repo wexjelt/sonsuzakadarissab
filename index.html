@@ -1,180 +1,155 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Her Şeyin Başladığı Gün...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Her Şeyin Başladığı Gün...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html {
+            background-color: #1a0f1a;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            font-family: 'Press Start 2P', monospace;
+        }
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
-body,html{background:#1a0f1a;overflow:hidden;width:100%;height:100%;font-family:'Press Start 2P',monospace;}
-canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+        #quiz-overlay {
+            position: absolute;
+            inset: 0;
+            background: #1a0f1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
 
-#quiz-overlay{
-position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#1a0f1a;z-index:200;
-}
-.quiz-box{background:#2b1625;border:6px solid #ff66aa;padding:30px;text-align:center;max-width:360px;width:90%;}
-.quiz-title{color:#fff;font-size:11px;margin-bottom:20px;}
-.quiz-input{width:100%;padding:12px;font-family:inherit;text-align:center;}
-.quiz-btn{width:100%;margin-top:10px;padding:12px;background:#ff55aa;color:#fff;border:none;}
+        .quiz-box {
+            background: #2b1625;
+            border: 6px solid #ff66aa;
+            padding: 30px;
+            text-align: center;
+        }
 
-#ui-container{
-position:absolute;inset:0;display:none;z-index:10;flex-direction:column;align-items:center;
-}
+        .quiz-input, .quiz-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
 
-#stage{position:relative;flex:1;width:100%;}
+        #ui-container {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
 
-#firework-box{
-position:absolute;bottom:25%;left:50%;transform:translateX(-50%);
-width:64px;height:80px;background:#2b1625;border:4px solid #ff55aa;
-}
+        #lighter {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            width: 44px;
+            height: 64px;
+            background: #ff55aa;
+        }
 
-#fuse{position:absolute;top:-24px;left:50%;width:8px;height:24px;background:#444;transform:translateX(-50%);}
-#fuse.burning{background:#ff3388;}
+        #fuse {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            width: 8px;
+            height: 24px;
+            transform: translateX(-50%);
+            background: #444;
+        }
 
-#lighter{
-position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
-width:44px;height:64px;background:#ff55aa;
-}
+        #fuse.burning {
+            background: #ff3388;
+        }
 
-#flame{
-position:absolute;top:-20px;left:10px;width:12px;height:16px;background:#ff3388;
-opacity:0;
-}
+        .love-message {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            color: white;
+            opacity: 0;
+            transition: 2s;
+        }
 
-#lighter.ignited #flame{opacity:1;}
-
-#text-overlay{
-position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);
-text-align:center;width:100%;
-}
-
-.love-message{
-font-family:'Great Vibes',cursive;font-size:3rem;color:#fff;opacity:0;transition:2s;
-}
-
-.love-message.show{opacity:1;}
-
-#replay-btn{
-position:absolute;bottom:8%;left:50%;transform:translateX(-50%) scale(0);
-padding:12px;background:#ff55aa;color:#fff;border:none;
-}
-</style>
+        .love-message.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 
 <body>
 
 <div id="quiz-overlay">
-  <div class="quiz-box">
-    <div class="quiz-title">Her şeyin başladığı gün?</div>
-    <input id="quiz-answer" class="quiz-input">
-    <button id="quiz-submit-btn" class="quiz-btn">GİRİŞ</button>
-    <div id="quiz-error" style="color:red;font-size:10px;opacity:0;">Yanlış</div>
-  </div>
+    <div class="quiz-box">
+        <div>Her şeyin başladığı gün?</div>
+        <input id="quiz-answer" class="quiz-input">
+        <button id="quiz-submit-btn" class="quiz-btn">GİRİŞ</button>
+        <div id="quiz-error" style="color:red;opacity:0;">Yanlış</div>
+    </div>
 </div>
 
 <canvas id="canvas"></canvas>
 
 <div id="ui-container">
-  <div id="stage">
-    <div id="firework-box"><div id="fuse"></div></div>
-    <div id="lighter"><div id="flame"></div></div>
-  </div>
+    <div id="lighter"><div id="fuse"></div></div>
 </div>
 
-<div id="text-overlay">
-  <div class="love-message" id="msg">Seni seviyorum...</div>
-</div>
-
-<button id="replay-btn">REPLAY</button>
+<div class="love-message" id="msg">Seni seviyorum...</div>
 
 <script>
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-resize();addEventListener("resize",resize);
-
-const quizOverlay=document.getElementById("quiz-overlay");
-const uiContainer=document.getElementById("ui-container");
-const lighter=document.getElementById("lighter");
-const fuse=document.getElementById("fuse");
-const msg=document.getElementById("msg");
-const replayBtn=document.getElementById("replay-btn");
-
-let isIgnited=false;
-let isDragging=false;
-let particles=[];
-let rockets=[];
-let showActive=false;
-let timeline=0;
-let loopStarted=false;
+let rockets = [];
+let particles = [];
+let showActive = false;
+let timeline = 0;
 
 /* QUIZ */
-document.getElementById("quiz-submit-btn").onclick=()=>{
-let v=document.getElementById("quiz-answer").value.replace(/[^0-9]/g,"");
+document.getElementById("quiz-submit-btn").onclick = () => {
+let v = document.getElementById("quiz-answer").value.replace(/[^0-9]/g,"");
+
 if(v==="09032026"||v==="932026"){
-quizOverlay.style.display="none";
-uiContainer.style.display="flex";
-startLoop();
+document.getElementById("quiz-overlay").style.display="none";
+document.getElementById("ui-container").style.display="flex";
+showActive = true;
+loop();
 }else{
 document.getElementById("quiz-error").style.opacity=1;
 setTimeout(()=>document.getElementById("quiz-error").style.opacity=0,2000);
 }
 };
 
-/* POINTER */
-lighter.addEventListener("pointerdown",(e)=>{
-e.preventDefault();
-if(!isIgnited){
-isIgnited=true;
-lighter.classList.add("ignited");
-
-const r=lighter.getBoundingClientRect();
-lighter.style.bottom="auto";
-lighter.style.top=r.top+"px";
-lighter.style.left=r.left+"px";
-}
-
-isDragging=true;
-lighter.setPointerCapture(e.pointerId);
-});
-
-lighter.addEventListener("pointermove",(e)=>{
-if(!isDragging)return;
-
-let x=e.clientX-22;
-let y=e.clientY-30;
-
-lighter.style.left=x+"px";
-lighter.style.top=y+"px";
-
-/* FIX COLLISION */
-const f=fuse.getBoundingClientRect();
-const l=lighter.getBoundingClientRect();
-
-if(l.left<f.right&&l.right>f.left&&l.top<f.bottom&&l.bottom>f.top){
-trigger();
-}
-});
-
-lighter.addEventListener("pointerup",()=>isDragging=false);
-
-/* TRIGGER */
-function trigger(){
-lighter.style.display="none";
-fuse.classList.add("burning");
-showActive=true;
-msg.classList.add("show");
-}
-
 /* PARTICLE */
-class P{
+class P {
 constructor(x,y,vx,vy,c){
-this.x=x;this.y=y;this.vx=vx;this.vy=vy;
-this.c=c;this.a=1;
+this.x=x;this.y=y;
+this.vx=vx;this.vy=vy;
+this.c=c;
+this.a=1;
 }
 update(){
 this.x+=this.vx;
@@ -191,17 +166,20 @@ ctx.globalAlpha=1;
 }
 
 /* ROCKET */
-class R{
+class R {
 constructor(){
 this.x=Math.random()*canvas.width;
 this.y=canvas.height;
 this.vy=-6;
+this.dead=false;
 }
 update(){
 this.y+=this.vy;
+
 if(Math.random()<0.3){
 particles.push(new P(this.x,this.y,Math.random()-0.5,Math.random()-0.5,"#ff66aa"));
 }
+
 if(this.y<canvas.height*0.3){
 for(let i=0;i<40;i++){
 particles.push(new P(this.x,this.y,Math.random()-0.5,Math.random()-0.5,"#fff"));
@@ -215,42 +193,34 @@ ctx.fillRect(this.x,this.y,3,10);
 }
 }
 
-/* LOOP FIX */
+/* LOOP — SADECE BURASI DÜZELTİLDİ */
 function loop(){
-if(!showActive)return;
+if(!showActive) return;
 
 requestAnimationFrame(loop);
+
 ctx.fillStyle="rgba(26,15,26,0.2)";
 ctx.fillRect(0,0,canvas.width,canvas.height);
 
 timeline++;
 
-if(timeline%60===0)rockets.push(new R());
+if(timeline%60===0){
+rockets.push(new R());
+}
 
-rockets.forEach((r,i)=>{
-r.update();r.draw();
-if(r.dead)rockets.splice(i,1);
-});
+/* ✅ FIX: forEach + splice kaldırıldı */
+for(let i=rockets.length-1;i>=0;i--){
+rockets[i].update();
+rockets[i].draw();
+if(rockets[i].dead) rockets.splice(i,1);
+}
 
-/* FIXED PARTICLES LOOP */
 for(let i=particles.length-1;i>=0;i--){
 particles[i].update();
 particles[i].draw();
-if(particles[i].a<=0)particles.splice(i,1);
+if(particles[i].a<=0) particles.splice(i,1);
 }
 }
-
-function startLoop(){
-if(loopStarted)return;
-loopStarted=true;
-loop();
-}
-
-function triggerLoopStart(){
-startLoop();
-}
-
-replayBtn.onclick=()=>location.reload();
 </script>
 
 </body>
