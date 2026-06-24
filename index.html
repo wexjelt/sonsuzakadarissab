@@ -28,9 +28,10 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            display: none;
+            opacity: 0;
             pointer-events: none;
             image-rendering: pixelated;
+            transition: opacity 0.3s ease;
         }
         
         /* --- ROMANTİK PIXEL ART SORU EKRANI --- */
@@ -45,6 +46,8 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            opacity: 1;
+            transition: opacity 0.4s ease;
         }
         .quiz-box {
             background: #2b1625;
@@ -110,11 +113,14 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 10;
-            display: none;
+            opacity: 0;
+            display: flex;
+            pointer-events: none;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+            transition: opacity 0.4s ease;
         }
         .instruction {
             font-size: 9px;
@@ -316,34 +322,42 @@
             canvas.height = h;
         }
 
-        // TAM TOLERANSLI VE SIZINTI ENGELLEYİCİ KONTROL MOTORU
+        // KUSURSUZ GÜVENLİK DUVARI AŞICI GEÇİŞ MOTORU
         function checkAnswer(e) {
             if(e) e.preventDefault();
             
+            // Önce klavyeyi kapatıp odaklanmayı sonlandırıyoruz (Tarayıcı rahatlasın)
             if (document.activeElement) {
                 document.activeElement.blur(); 
             }
 
-            // Türkçe karakterleri eşitle ve tamamen küçült
             let rawInput = quizAnswer.value.trim().toLowerCase()
                 .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
                 .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
 
-            // Regex Bariyeri: Sadece düz harf ve rakamları süz (Görünmez mobil boşlukları yok eder)
             let cleanInput = rawInput.replace(/[^a-z0-9]/g, '');
 
-            // Kullanıcı ne yazarsa yazsın (9 mart, 9mart, 09.03, 09mart, 93) hatasız kabul edilir
-            if(cleanInput === "9mart" || cleanInput === "09mart" || cleanInput === "0903" || cleanInput === "93") {
+            // Genişletilmiş Akıllı Eşleşme Bariyeri
+            if(cleanInput === "9mart" || cleanInput === "09mart" || cleanInput === "9" || cleanInput === "0903" || cleanInput === "93") {
                 
-                quizOverlay.style.display = 'none';
-                canvas.style.display = 'block';
-                uiContainer.style.display = 'flex';
-                
-                forceResize();
-                setTimeout(forceResize, 50);
-                setTimeout(forceResize, 150);
+                // ASENKRON KADEMELİ GEÇİŞ (Tarayıcı donma engelleyici kilidi açar)
+                setTimeout(() => {
+                    quizOverlay.style.opacity = '0';
+                    canvas.style.opacity = '1';
+                    uiContainer.style.opacity = '1';
+                    
+                    canvas.style.display = 'block';
+                    uiContainer.style.pointerEvents = 'auto';
+                    
+                    forceResize();
+                }, 50);
 
-                window.addEventListener('resize', forceResize);
+                setTimeout(() => {
+                    quizOverlay.style.display = 'none';
+                    forceResize();
+                    window.addEventListener('resize', forceResize);
+                }, 400);
+
             } else {
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
@@ -354,7 +368,7 @@
         quizSubmitBtn.addEventListener('click', checkAnswer);
         quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
 
-        // --- MODERN SÜREKLİ DOKUNMATİK BAĞLANTI (POINTER EVENTS) ---
+        // --- GÜVENLİ POINTER EVENTS SÜRÜKLEME SİSTEMİ ---
         let startX = 0, startY = 0;
 
         function onPointerDown(e) {
@@ -417,7 +431,7 @@
             }, 1500);
         }
 
-        // --- ROMANTİK MINECRAFT PIXEL MOTORU ---
+        // --- PIXEL HAVAİ FİŞEK MOTORU ---
         class MinecraftLoveParticle {
             constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
                 this.x = x; this.y = y;
@@ -510,15 +524,4 @@
                         
                         particles.push(new MinecraftLoveParticle(
                             px, py, 
-                            Math.random() * 0.06 - 0.03, Math.random() * 0.06 - 0.03, 
-                            color, pixelSize, 0.0003, 0.001
-                        ));
-                    });
-                }
-                startX += charWidth + spacing;
-            });
-
-            for (let i = 0; i < 80; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 7 + 2;
-                particles.push(new 
+                            Math.ra
