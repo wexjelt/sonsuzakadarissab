@@ -2,402 +2,45 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sonsuz Bir Hikaye...</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body, html {
-            background-color: #110b11;
-            overflow: hidden;
-            width: 100%;
-            height: 100dvh;
-            position: relative;
-            overscroll-behavior: none;
-            font-family: 'Press Start 2P', monospace;
-        }
-        canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            display: none;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-        
-        /* --- PIXEL ART SORU EKRANI --- */
-        #quiz-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #110b11;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .quiz-box {
-            background: #211421;
-            border: 6px solid #ff007f;
-            outline: 6px solid #000;
-            box-shadow: inset -6px -6px 0 #0f070f, inset 6px 6px 0 #ff66b2;
-            padding: 30px 20px;
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-        }
-        .quiz-title {
-            color: #fff;
-            font-size: 10px;
-            line-height: 2;
-            margin-bottom: 25px;
-            text-shadow: 3px 3px 0 #000;
-        }
-        .quiz-input {
-            width: 100%;
-            background: #000;
-            border: 4px solid #ff007f;
-            color: #00ffcc;
-            padding: 14px;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            text-align: center;
-            outline: none;
-            margin-bottom: 20px;
-            box-shadow: inset 4px 4px 0 #110b11;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        .quiz-btn {
-            background: #ff007f;
-            color: #fff;
-            border: 4px solid #ff66b2;
-            outline: 4px solid #000;
-            padding: 14px 20px;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: inset -4px -4px 0 #99004c;
-            width: 100%;
-            display: block;
-        }
-        .quiz-btn:active {
-            transform: translate(2px, 2px);
-        }
-        .error-msg {
-            color: #ff3333;
-            font-size: 8px;
-            margin-top: 15px;
-            min-height: 12px;
-            opacity: 0;
-            text-shadow: 2px 2px 0 #000;
-            transition: opacity 0.2s linear;
-        }
-
-        /* --- OYUN ALANI --- */
-        #ui-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
-        }
-        .instruction {
-            font-size: 9px;
-            color: #ff66b2;
-            text-align: center;
-            line-height: 1.8;
-            text-shadow: 3px 3px 0 #000;
-            pointer-events: none;
-        }
-        #stage {
-            position: relative;
-            width: 100%;
-            flex-grow: 1;
-            touch-action: none;
-        }
-        #firework-box {
-            position: absolute;
-            bottom: 25%; left: 50%;
-            transform: translateX(-50%);
-            width: 72px; height: 92px;
-            background: #211421;
-            border: 4px solid #ff007f;
-            outline: 4px solid #000;
-            box-shadow: inset -6px -6px 0 #0f070f;
-        }
-        #firework-box::after {
-            content: '';
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            background: repeating-linear-gradient(45deg, #ff007f, #ff007f 10px, #000 10px, #000 20px);
-        }
-        #fuse {
-            position: absolute;
-            top: -24px; left: 50%;
-            width: 8px; height: 24px;
-            background: #444;
-            transform: translateX(-50%);
-        }
-        #fuse::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
-            background-size: 100% 8px;
-        }
-        #fuse.burning::before {
-            background-image: linear-gradient(to bottom, #ff3300 50%, #ffcc00 50%);
-            animation: fuseBurn 1.5s linear forwards;
-        }
-        @keyframes fuseBurn {
-            0% { height: 100%; }
-            100% { height: 0%; }
-        }
-        #lighter {
-            position: absolute;
-            bottom: 8%; left: 50%;
-            transform: translateX(-50%);
-            width: 48px; height: 68px;
-            background: #ff007f;
-            border: 4px solid #ff66b2;
-            outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #99004c;
-            z-index: 100;
-        }
-        #lighter-top {
-            position: absolute;
-            top: -12px; left: 6px;
-            width: 28px; height: 12px;
-            background: #cccccc;
-            border: 4px solid #000;
-            border-bottom: none;
-        }
-        #flame {
-            position: absolute;
-            top: -20px; left: 10px;
-            width: 12px; height: 16px;
-            background: #ff3300;
-            outline: 2px solid #ffcc00;
-            opacity: 0;
-            transform: scale(0);
-        }
-        #lighter.ignited #flame {
-            opacity: 1;
-            transform: scale(1);
-            animation: pixelFlicker 0.15s infinite steps(2);
-        }
-        @keyframes pixelFlicker {
-            0% { transform: scale(1) translate(2px, 0); background: #ff3300; }
-            100% { transform: scale(1.1) translate(-2px, -2px); background: #ffcc00; }
-        }
-        
-        /* --- YAZI OVERLAY --- */
-        #text-overlay {
-            position: absolute;
-            top: 40%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            text-align: center;
-            width: 90%;
-            pointer-events: none;
-        }
-        .love-message {
-            font-family: 'Great Vibes', cursive;
-            font-size: 3.5rem;
-            color: #ffffff;
-            opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6);
-            transition: opacity 2.5s ease, transform 2.5s ease;
-            transform: translate(-50%, -50%) scale(0.9);
-            position: absolute;
-            left: 50%; width: 100%;
-        }
-        .love-message.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.02);
-        }
-        #replay-btn {
-            position: absolute;
-            bottom: 8%; left: 50%;
-            transform: translateX(-50%) scale(0);
-            font-family: 'Press Start 2P', monospace;
-            font-size: 10px;
-            padding: 12px 20px;
-            background: #ff007f;
-            color: #fff;
-            border: 4px solid #ff66b2;
-            outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #99004c;
-            cursor: pointer;
-            z-index: 105;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        body { background: #110b11; color: white; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { border: 4px solid #ff007f; padding: 20px; text-align: center; width: 80%; max-width: 300px; }
+        input { width: 90%; padding: 10px; background: black; border: 2px solid #ff007f; color: white; text-align: center; margin-bottom: 10px; font-size: 16px; }
+        button { background: #ff007f; color: white; border: none; padding: 10px 20px; font-weight: bold; width: 100%; }
+        #error { color: red; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <div id="quiz-overlay">
-        <form class="quiz-box" id="quiz-form">
-            <div class="quiz-title" id="quiz-question">Beraber gitmek istediğimiz ülke?<br>(İpucu: Baş harfi sen)</div>
-            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
-            <button type="submit" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
-            <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
-        </form>
-    </div>
+<div class="box">
+    <p>Beraber gitmek istediğimiz ülke?<br>(Baş harfi S)</p>
+    <form id="loginForm">
+        <input type="text" id="cevap" placeholder="Cevabı yaz..." required autocomplete="off">
+        <button type="submit">GİRİŞ YAP</button>
+    </form>
+    <div id="error">Yanlış cevap, tekrar dene...</div>
+</div>
 
-    <canvas id="canvas"></canvas>
+<script>
+    const form = document.getElementById('loginForm');
+    const input = document.getElementById('cevap');
+    const error = document.getElementById('error');
 
-    <div id="ui-container">
-        <div class="instruction" id="info-text">Çakmağa Dokun ve Yak!<br>Sonra Sürükleyip Fitili Ateşle.</div>
-        <div id="stage">
-            <div id="firework-box"><div id="fuse"></div></div>
-            <div id="lighter"><div id="flame"></div><div id="lighter-top"></div></div>
-        </div>
-    </div>
-
-    <div id="text-overlay">
-        <div class="love-message" id="msg">Seni göğe baktığında gördüğün ay ve yıldızlar kadar seviyorum...</div>
-    </div>
-
-    <button id="replay-btn">TEKRAR OYNAT</button>
-
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const lighter = document.getElementById('lighter');
-        const fuse = document.getElementById('fuse');
-        const uiContainer = document.getElementById('ui-container');
-        const infoText = document.getElementById('info-text');
-        const msg = document.getElementById('msg');
-        const replayBtn = document.getElementById('replay-btn');
-        const quizOverlay = document.getElementById('quiz-overlay');
-        const quizForm = document.getElementById('quiz-form');
-        const quizAnswer = document.getElementById('quiz-answer');
-        const quizError = document.getElementById('quiz-error');
-
-        let isIgnited = false;
-        let isDragging = false;
-        let particles = [];
-        let rockets = [];
-        let animationFrame;
-        let timeline = 0;
-        let showActive = false;
-        let finalRocketLaunched = false;
-
-        const textGrid = {
-            '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
-            'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
-            'S': [[0,1],[0,2],[0,3],[1,0],[2,0],[3,1],[3,2],[4,3],[5,3],[6,0],[6,1],[6,2]],
-            'A': [[0,2],[1,1],[1,3],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,4],[5,0],[5,4],[6,0],[6,4]],
-            'B': [[0,0],[0,1],[0,2],[0,3],[1,0],[1,4],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[4,0],[4,4],[5,0],[5,4],[6,0],[6,1],[6,2],[6,3]]
-        };
-        const wordSequence = ["#", "İ", "S", "S", "A", "B"];
-
-        function resize() { 
-            canvas.width = window.innerWidth; 
-            canvas.height = window.innerHeight; 
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = input.value.toLowerCase().replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c');
+        
+        if (val === "isvicre" || val === "isviçre") {
+            alert("Doğru! Yönlendiriliyorsun...");
+            // Buraya oyunun olduğu kısmı tetikleyen kodu ekleyebilirsin
+            window.location.href = "oyun_sayfan.html"; // Ya da gizli div'i göster
+        } else {
+            error.style.display = "block";
+            input.value = "";
         }
-
-        function temizle(metin) {
-            if (!metin) return "";
-            return metin.trim().toLowerCase()
-                .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
-                .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-        }
-
-        // Tıklama karmaşası yerine doğrudan Form Submit dinleniyor. En güvenli yöntem.
-        quizForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // Sayfanın yenilenmesini engeller
-
-            const girdi = temizle(quizAnswer.value);
-            
-            if(girdi === "isvicre" || girdi === "isviçre") {
-                if (document.activeElement) { document.activeElement.blur(); }
-                
-                quizOverlay.style.display = 'none'; 
-                uiContainer.style.display = 'flex';
-                canvas.style.display = 'block';
-                window.addEventListener('resize', resize); 
-                resize();
-            } else {
-                quizError.style.opacity = '1';
-                quizAnswer.value = "";
-                setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
-            }
-        });
-
-        // --- MOBİL VE MOUSE SÜRÜKLEME KONTROLLERİ ---
-        let startX = 0, startY = 0;
-
-        function onTouchStart(e) {
-            if (e.target === lighter || lighter.contains(e.target)) { e.preventDefault(); }
-            if (!isIgnited) {
-                isIgnited = true;
-                lighter.classList.add('ignited');
-                infoText.innerHTML = "Harika! Şimdi Sürükle<br>ve Üstteki Fitili Yak.";
-                const rect = lighter.getBoundingClientRect();
-                lighter.style.transform = 'none';
-                lighter.style.left = rect.left + 'px';
-                lighter.style.top = rect.top + 'px';
-            }
-            isDragging = true;
-            const touch = e.touches ? e.touches[0] : e;
-            startX = touch.clientX - lighter.offsetLeft;
-            startY = touch.clientY - lighter.offsetTop;
-        }
-
-        function onTouchMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            const touch = e.touches ? e.touches[0] : e;
-            let currentX = touch.clientX - startX;
-            let currentY = touch.clientY - startY;
-            if(currentX < 0) currentX = 0;
-            if(currentX > window.innerWidth - 48) currentX = window.innerWidth - 48;
-            lighter.style.left = currentX + 'px';
-            lighter.style.top = currentY + 'px';
-
-            const fRect = fuse.getBoundingClientRect();
-            const flameRect = document.getElementById('flame').getBoundingClientRect();
-            if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
-                flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
-                triggerSequence();
-            }
-        }
-
-        function onTouchEnd() { isDragging = false; }
-        lighter.addEventListener('touchstart', onTouchStart, { passive: false });
-        window.addEventListener('touchmove', onTouchMove, { passive: false });
-        window.addEventListener('touchend', onTouchEnd);
-        lighter.addEventListener('mousedown', onTouchStart);
-        window.addEventListener('mousemove', onTouchMove);
-        window.addEventListener('mouseup', onTouchEnd);
-
-        function triggerSequence() {
-            isDragging = false;
-            lighter.style.display = 'none';
-            fuse.classList.add('burning');
-            infoText.style.opacity = '0';
-            setTimeout(() => {
-                uiContainer.style.display = 'none';
-                showActive = true;
-                startShow();
-            }, 1500);
-        }
-
-        // --- MINECRAFT STİL KARE PAR
+    });
+</script>
+</body>
+</html>
