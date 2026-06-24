@@ -28,10 +28,9 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            opacity: 0;
+            display: none;
             pointer-events: none;
             image-rendering: pixelated;
-            transition: opacity 0.3s ease;
         }
         
         /* --- ROMANTİK PIXEL ART SORU EKRANI --- */
@@ -46,8 +45,6 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            opacity: 1;
-            transition: opacity 0.4s ease;
         }
         .quiz-box {
             background: #2b1625;
@@ -113,14 +110,11 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 10;
-            opacity: 0;
-            display: flex;
-            pointer-events: none;
+            display: none;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
-            transition: opacity 0.4s ease;
         }
         .instruction {
             font-size: 9px;
@@ -303,7 +297,7 @@
         let rockets = [];
         let animationFrame;
         let timeline = 0;
-        let showActive = false;
+        let showActive = false; // BAŞLANGIÇTA TAMAMEN KAPALI
         let finalRocketLaunched = false;
 
         const textGrid = {
@@ -322,11 +316,10 @@
             canvas.height = h;
         }
 
-        // KUSURSUZ GÜVENLİK DUVARI AŞICI GEÇİŞ MOTORU
+        // KUSURSUZ GİRİŞ VE SIFIRDAN TETİKLEME MOTORU
         function checkAnswer(e) {
             if(e) e.preventDefault();
             
-            // Önce klavyeyi kapatıp odaklanmayı sonlandırıyoruz (Tarayıcı rahatlasın)
             if (document.activeElement) {
                 document.activeElement.blur(); 
             }
@@ -337,27 +330,18 @@
 
             let cleanInput = rawInput.replace(/[^a-z0-9]/g, '');
 
-            // Genişletilmiş Akıllı Eşleşme Bariyeri
             if(cleanInput === "9mart" || cleanInput === "09mart" || cleanInput === "9" || cleanInput === "0903" || cleanInput === "93") {
                 
-                // ASENKRON KADEMELİ GEÇİŞ (Tarayıcı donma engelleyici kilidi açar)
-                setTimeout(() => {
-                    quizOverlay.style.opacity = '0';
-                    canvas.style.opacity = '1';
-                    uiContainer.style.opacity = '1';
-                    
-                    canvas.style.display = 'block';
-                    uiContainer.style.pointerEvents = 'auto';
-                    
-                    forceResize();
-                }, 50);
-
-                setTimeout(() => {
-                    quizOverlay.style.display = 'none';
-                    forceResize();
-                    window.addEventListener('resize', forceResize);
-                }, 400);
-
+                // Ekranları değiştir
+                quizOverlay.style.display = 'none';
+                canvas.style.display = 'block';
+                uiContainer.style.display = 'flex';
+                
+                // Boyutları oturt
+                forceResize();
+                setTimeout(forceResize, 50);
+                window.addEventListener('resize', forceResize);
+                
             } else {
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
@@ -368,7 +352,7 @@
         quizSubmitBtn.addEventListener('click', checkAnswer);
         quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
 
-        // --- GÜVENLİ POINTER EVENTS SÜRÜKLEME SİSTEMİ ---
+        // --- DOKUNMATİK SÜRÜKLEME ---
         let startX = 0, startY = 0;
 
         function onPointerDown(e) {
@@ -426,12 +410,13 @@
             infoText.style.opacity = '0';
             setTimeout(() => {
                 uiContainer.style.display = 'none';
-                showActive = true;
-                startShow();
+                showActive = true; // MOTORU ŞİMDİ GERÇEKTEN ATEŞLİYORUZ
+                timeline = 0;      // SAYAÇ SIFIRDAN BAŞLIYOR
+                loop();
             }, 1500);
         }
 
-        // --- PIXEL HAVAİ FİŞEK MOTORU ---
+        // --- KANVAS PIXEL PARÇACIK MOTORU ---
         class MinecraftLoveParticle {
             constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
                 this.x = x; this.y = y;
@@ -524,4 +509,15 @@
                         
                         particles.push(new MinecraftLoveParticle(
                             px, py, 
-                            Math.ra
+                            Math.random() * 0.06 - 0.03, Math.random() * 0.06 - 0.03, 
+                            color, pixelSize, 0.0003, 0.001
+                        ));
+                    });
+                }
+                startX += charWidth + spacing;
+            });
+
+            for (let i = 0; i < 80; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 7 + 2;
+                particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.0
