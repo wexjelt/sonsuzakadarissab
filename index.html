@@ -1,1 +1,547 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Her Şeyin Başladığı Gün...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body, html {
+            background-color: #1a0f1a;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            font-family: 'Press Start 2P', monospace;
+        }
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            image-rendering: pixelated;
+        }
+        
+        /* --- SORU EKRANI KATMANI --- */
+        #quiz-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #1a0f1a;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .quiz-box {
+            background: #2b1625;
+            border: 6px solid #ff66aa;
+            outline: 6px solid #000;
+            box-shadow: inset -6px -6px 0 #150a12, inset 6px 6px 0 #ff99cc;
+            padding: 35px 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        .quiz-title {
+            color: #fff;
+            font-size: 11px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0 #000;
+        }
+        .quiz-input {
+            width: 100%;
+            background: #000;
+            border: 4px solid #ff55aa;
+            color: #ff99cc;
+            padding: 14px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 25px;
+            box-shadow: inset 4px 4px 0 #150a12;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .quiz-btn {
+            background: #ff55aa;
+            color: #fff;
+            border: 4px solid #ff99cc;
+            outline: 4px solid #000;
+            padding: 15px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: inset -4px -4px 0 #b32d6b;
+            width: 100%;
+            display: block;
+        }
+        .error-msg {
+            color: #ff4444;
+            font-size: 9px;
+            margin-top: 20px;
+            min-height: 15px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        /* --- OYUN ALANI KATMANI --- */
+        #ui-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(40px + env(safe-area-inset-top)) 20px calc(50px + env(safe-area-inset-bottom)) 20px;
+            pointer-events: none;
+        }
+        .instruction {
+            font-size: 9px;
+            color: #ff99cc;
+            text-align: center;
+            line-height: 1.8;
+            text-shadow: 2px 2px 0 #000;
+        }
+        #stage {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+        }
+        #firework-box {
+            position: absolute;
+            bottom: 30%; left: 50%;
+            transform: translateX(-50%);
+            width: 64px; height: 80px;
+            background: #2b1625;
+            border: 4px solid #ff55aa;
+            outline: 4px solid #000;
+        }
+        #firework-box::after {
+            content: '';
+            position: absolute;
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            background: repeating-linear-gradient(45deg, #ff3388, #ff3388 10px, #150a12 10px, #150a12 20px);
+        }
+        #fuse {
+            position: absolute;
+            top: -24px; left: 50%;
+            width: 8px; height: 24px;
+            background: #444;
+            transform: translateX(-50%);
+        }
+        #fuse::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
+            background-size: 100% 8px;
+        }
+        #fuse.burning::before {
+            background-image: linear-gradient(to bottom, #ff3388 50%, #ffcc00 50%);
+            animation: fuseBurn 1.5s linear forwards;
+        }
+        @keyframes fuseBurn {
+            0% { height: 100%; }
+            100% { height: 0%; }
+        }
+        #lighter {
+            position: absolute;
+            bottom: 10%; left: 50%;
+            transform: translateX(-50%);
+            width: 44px; height: 64px;
+            background: #ff55aa;
+            border: 4px solid #ff99cc;
+            outline: 4px solid #000;
+            z-index: 100;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        #lighter-top {
+            position: absolute;
+            top: -12px; left: 6px;
+            width: 24px; height: 12px;
+            background: #dddddd;
+            border: 4px solid #000;
+            border-bottom: none;
+        }
+        #flame {
+            position: absolute;
+            top: -20px; left: 10px;
+            width: 12px; height: 16px;
+            background: #ff3388;
+            outline: 2px solid #ff99cc;
+            display: none;
+        }
+        #lighter.ignited #flame {
+            display: block;
+            animation: pixelFlicker 0.15s infinite steps(2);
+        }
+        @keyframes pixelFlicker {
+            0% { transform: translate(1px, 0); background: #ff3388; }
+            100% { transform: translate(-1px, -1px); background: #ff77aa; }
+        }
+        
+        /* --- AŞK MESAJI --- */
+        #text-overlay {
+            position: absolute;
+            top: 42%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            text-align: center;
+            width: 90%;
+            pointer-events: none;
+        }
+        .love-message {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.2rem;
+            color: #ffffff;
+            opacity: 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255, 51, 136, 0.7);
+            transition: opacity 2.5s ease;
+            display: none;
+        }
+        .love-message.show {
+            display: block;
+            opacity: 1;
+        }
+        #replay-btn {
+            position: absolute;
+            bottom: 10%; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 15px 20px;
+            background: #ff55aa;
+            color: #fff;
+            border: 4px solid #ff99cc;
+            outline: 4px solid #000;
+            cursor: pointer;
+            z-index: 105;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-overlay">
+        <div class="quiz-box">
+            <div class="quiz-title">Her şeyin başladığı gün?</div>
+            <input type="text" class="quiz-input" id="quiz-answer" placeholder="09.03.2026" autocomplete="off">
+            <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
+            <div class="error-msg" id="quiz-error"></div>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-container">
+        <div class="instruction" id="info-text">Çakmağa Dokun ve Yak!<br>Sonra Sürükleyip Fitili Ateşle.</div>
+        <div id="stage">
+            <div id="firework-box"><div id="fuse"></div></div>
+            <div id="lighter"><div id="flame"></div><div id="lighter-top"></div></div>
+        </div>
+    </div>
+
+    <div id="text-overlay">
+        <div class="love-message" id="msg">Seni göğe baktığında gördüğün ay ve yıldızlar kadar seviyorum...</div>
+    </div>
+
+    <button id="replay-btn">TEKRAR OYNAT</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const lighter = document.getElementById('lighter');
+        const fuse = document.getElementById('fuse');
+        const uiContainer = document.getElementById('ui-container');
+        const infoText = document.getElementById('info-text');
+        const msg = document.getElementById('msg');
+        const replayBtn = document.getElementById('replay-btn');
+        const quizOverlay = document.getElementById('quiz-overlay');
+        const quizAnswer = document.getElementById('quiz-answer');
+        const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+        const quizError = document.getElementById('quiz-error');
+
+        let isIgnited = false;
+        let isDragging = false;
+        let particles = [];
+        let rockets = [];
+        let animationFrame;
+        let timeline = 0;
+        let showActive = false;
+        let finalRocketLaunched = false;
+
+        const textGrid = {
+            '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
+            'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
+            'S': [[0,1],[0,2],[0,3],[1,0],[2,0],[3,1],[3,2],[4,3],[5,3],[6,0],[6,1],[6,2]],
+            'A': [[0,2],[1,1],[1,3],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,4],[5,0],[5,4],[6,0],[6,4]],
+            'B': [[0,0],[0,1],[0,2],[0,3],[1,0],[1,4],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[4,0],[4,4],[5,0],[5,4],[6,0],[6,1],[6,2],[6,3]]
+        };
+        const wordSequence = ["#", "İ", "S", "S", "A", "B"];
+
+        function forceResize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', forceResize);
+        forceResize();
+
+        // MOBİLİN EN GÜVENLİ DOĞRULAMA FONKSİYONU
+        function checkCode() {
+            quizAnswer.blur();
+            
+            // Tüm noktalama işaretlerini silip sadece rakamları alıyoruz
+            let inputVal = quizAnswer.value.trim().replace(/[^0-9]/g, '');
+
+            // 09.03.2026 -> 09032026 veya kısa yazımı 932026
+            if (inputVal === "09032026" || inputVal === "932026") {
+                // Soru ekranını tamamen yok et (Tarayıcıyı hafifletir)
+                quizOverlay.remove();
+                
+                // Oyun alanını aç
+                uiContainer.style.display = "flex";
+                forceResize();
+            } else {
+                quizError.innerHTML = "Yanlış cevap sevgilim... ❤️";
+                quizAnswer.value = "";
+                setTimeout(() => { quizError.innerHTML = ""; }, 2500);
+            }
+        }
+
+        // Tıklama engellerini aşmak için tüm dokunmatik tetikleyicileri bağlıyoruz
+        quizSubmitBtn.onclick = checkCode;
+        quizSubmitBtn.ontouchend = function(e) {
+            e.preventDefault();
+            checkCode();
+        };
+        quizAnswer.onkeypress = function(e) {
+            if (e.key === 'Enter') checkCode();
+        };
+
+        // --- MOBİL UYUMLU SÜRÜKLE BIRAK SİSTEMİ ---
+        let startX = 0, startY = 0;
+
+        function startDrag(e) {
+            e.preventDefault();
+            let pointer = e.touches ? e.touches[0] : e;
+            
+            if (!isIgnited) {
+                isIgnited = true;
+                lighter.classList.add('ignited');
+                infoText.innerHTML = "Harika! Şimdi Sürükle<br>ve Üstteki Fitili Yak.";
+                
+                let rect = lighter.getBoundingClientRect();
+                lighter.style.transform = 'none';
+                lighter.style.left = rect.left + 'px';
+                lighter.style.top = rect.top + 'px';
+            }
+            isDragging = true;
+            startX = pointer.clientX - lighter.offsetLeft;
+            startY = pointer.clientY - lighter.offsetTop;
+        }
+
+        function moveDrag(e) {
+            if (!isDragging) return;
+            let pointer = e.touches ? e.touches[0] : e;
+            
+            let currentX = pointer.clientX - startX;
+            let currentY = pointer.clientY - startY;
+            
+            if(currentX < 0) currentX = 0;
+            if(currentX > window.innerWidth - 44) currentX = window.innerWidth - 44;
+            
+            lighter.style.left = currentX + 'px';
+            lighter.style.top = currentY + 'px';
+
+            // Çakmak ucu fitile değdi mi?
+            let fRect = fuse.getBoundingClientRect();
+            let flameRect = document.getElementById('flame').getBoundingClientRect();
+            
+            if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
+                flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
+                startFireworks();
+            }
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        // Hem mouse hem dokunmatik ekranlar için ortak dinleyiciler
+        lighter.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', moveDrag);
+        window.addEventListener('mouseup', stopDrag);
+
+        lighter.addEventListener('touchstart', startDrag, {passive: false});
+        window.addEventListener('touchmove', moveDrag, {passive: false});
+        window.addEventListener('touchend', stopDrag);
+
+        function startFireworks() {
+            isDragging = false;
+            lighter.style.display = 'none';
+            fuse.classList.add('burning');
+            infoText.style.opacity = '0';
+            setTimeout(() => {
+                uiContainer.style.display = 'none';
+                showActive = true;
+                timeline = 0;
+                loop();
+            }, 1500);
+        }
+
+        // --- HAVAİ FİŞEK PARÇACIK MOTORU ---
+        class PixelParticle {
+            constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
+                this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy;
+                this.color = color;
+                this.size = size; 
+                this.fade = fade;
+                this.gravity = gravity;
+                this.alpha = 1;
+            }
+            update() {
+                this.vx *= 0.94; this.vy *= 0.94;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
+                this.alpha -= this.fade;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        class Rocket {
+            constructor(startX, startY, targetY, isFinal = false) {
+                this.x = startX; this.y = startY; this.targetY = targetY;
+                this.isFinal = isFinal;
+                this.vy = isFinal ? -4.5 : -Math.random() * 3 - 5;
+                this.alive = true;
+            }
+            update() {
+                this.y += this.vy;
+                if (this.y <= this.targetY) {
+                    this.alive = false;
+                    if (this.isFinal) {
+                        explodeFinalText(this.x, this.y);
+                    } else {
+                        explodeStandard(this.x, this.y);
+                    }
+                }
+                if (Math.random() < 0.3) {
+                    particles.push(new PixelParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#ffb3d9', 4, 0.05, 0.02));
+                }
+            }
+            draw() {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(this.x - 2, this.y, 4, 12);
+            }
+        }
+
+        function explodeStandard(cx, cy) {
+            const colors = ['#ff3388', '#ff66aa', '#ffb3d9', '#ff0055', '#ffffff'];
+            const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+            const isHeart = Math.random() < 0.5;
+
+            if (isHeart) {
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.09) {
+                    const r = 4.5;
+                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.12;
+                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.12;
+                    particles.push(new PixelParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.01 + 0.006, 0.03));
+                }
+            } else {
+                for (let i = 0; i < 55; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 5 + 1;
+                    particles.push(new PixelParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01, 0.05));
+                }
+            }
+        }
+
+        function explodeFinalText(cx, cy) {
+            const pixelSize = Math.max(4, Math.min(8, window.innerWidth / 60)); 
+            const charWidth = 6 * pixelSize; 
+            const spacing = 3 * pixelSize; 
+            const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
+            let startX = cx - (totalWidth / 2);
+
+            wordSequence.forEach((char) => {
+                const matrix = textGrid[char];
+                if (matrix) {
+                    matrix.forEach(([row, col]) => {
+                        const px = startX + (col * pixelSize);
+                        const py = cy + (row * pixelSize) - (3.5 * pixelSize);
+                        const color = char === '#' ? '#ffb3d9' : '#ff0055';
+                        
+                        particles.push(new PixelParticle(
+                            px, py, 
+                            Math.random() * 0.06 - 0.03, Math.random() * 0.06 - 0.03, 
+                            color, pixelSize, 0.0003, 0.001
+                        ));
+                    });
+                }
+                startX += charWidth + spacing;
+            });
+        }
+
+        function loop() {
+            if (!showActive) return;
+            animationFrame = requestAnimationFrame(loop);
+            
+            ctx.fillStyle = 'rgba(26, 15, 26, 0.2)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            timeline++;
+
+            if (timeline % 50 === 1 && timeline < 320) {
+                rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.35) + canvas.height * 0.1));
+            }
+
+            if (timeline === 140) { msg.classList.add('show'); }
+
+            if (timeline === 380 && !finalRocketLaunched) {
+                finalRocketLaunched = true;
+                rockets.push(new Rocket(canvas.width / 2, canvas.height, canvas.height * 0.35, true));
+            }
+
+            if (timeline === 1150) { 
+                replayBtn.style.display = 'block';
+            }
+
+            rockets.forEach((r, index) => {
+                r.update(); r.draw();
+                if (!r.alive) rockets.splice(index, 1);
+            });
+
+            particles.forEach((p, index) => {
+                p.update(); p.draw();
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+        }
+
+        replayBtn.onclick = function() { location.reload(); };
+        replayBtn.ontouchend = function() { location.reload(); };
+    </script>
+</body>
+</html>
 
