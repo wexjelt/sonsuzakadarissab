@@ -15,7 +15,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body, html {
-            background-color: #0b0e14; /* Minecraft gece gökyüzü rengine yakın */
+            background-color: #1a0f1a; /* Romantik derin mürdüm/gece tonu */
             overflow: hidden;
             width: 100%;
             height: 100dvh;
@@ -28,28 +28,31 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            display: none;
-            image-rendering: pixelated; /* Piksellerin net görünmesi için */
+            opacity: 0; /* display:none yerine opacity ile tarayıcı kilitlenmesi önlendi */
+            pointer-events: none;
+            image-rendering: pixelated;
+            transition: opacity 0.3s ease;
         }
         
-        /* --- PIXEL ART SORU EKRANI --- */
+        /* --- ROMANTİK PIXEL ART SORU EKRANI --- */
         #quiz-overlay {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: #0b0e14;
+            background: #1a0f1a;
             z-index: 200;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: opacity 0.4s ease;
         }
         .quiz-box {
-            background: #2e2e2e;
-            border: 6px solid #4a4a4a;
+            background: #2b1625;
+            border: 6px solid #ff66aa; /* Romantik pembe çerçeve */
             outline: 6px solid #000;
-            box-shadow: inset -6px -6px 0 #1a1a1a, inset 6px 6px 0 #707070;
+            box-shadow: inset -6px -6px 0 #150a12, inset 6px 6px 0 #ff99cc;
             padding: 35px 20px;
             width: 100%;
             max-width: 360px;
@@ -57,47 +60,48 @@
         }
         .quiz-title {
             color: #fff;
-            font-size: 12px;
+            font-size: 11px;
             line-height: 1.8;
             margin-bottom: 30px;
-            text-shadow: 3px 3px 0 #000;
+            text-shadow: 3px 3px 0 #000, 0 0 5px #ff55aa;
         }
         .quiz-input {
             width: 100%;
             background: #000;
-            border: 4px solid #4a4a4a;
-            color: #55ff55; /* Minecraft yeşili */
+            border: 4px solid #ff55aa;
+            color: #ff99cc;
             padding: 14px;
             font-family: 'Press Start 2P', monospace;
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             outline: none;
             margin-bottom: 25px;
-            box-shadow: inset 4px 4px 0 #1a1a1a;
+            box-shadow: inset 4px 4px 0 #150a12;
             -webkit-user-select: text;
             user-select: text;
         }
         .quiz-input:focus {
-            border-color: #55ff55;
+            border-color: #ff99cc;
+            box-shadow: 0 0 10px #ff55aa, inset 4px 4px 0 #150a12;
         }
         .quiz-btn {
-            background: #555555;
+            background: #ff55aa;
             color: #fff;
-            border: 4px solid #a9a9a9;
+            border: 4px solid #ff99cc;
             outline: 4px solid #000;
             padding: 12px 20px;
             font-family: 'Press Start 2P', monospace;
             font-size: 11px;
             cursor: pointer;
-            box-shadow: inset -4px -4px 0 #333333;
+            box-shadow: inset -4px -4px 0 #b32d6b;
             width: 100%;
         }
         .quiz-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: inset 2px 2px 0 #333333;
+            box-shadow: inset 2px 2px 0 #b32d6b;
         }
         .error-msg {
-            color: #ff5555;
+            color: #ff4444;
             font-size: 9px;
             margin-top: 20px;
             min-height: 12px;
@@ -117,53 +121,54 @@
             justify-content: space-between;
             align-items: center;
             padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+            pointer-events: none;
         }
         .instruction {
             font-size: 9px;
-            color: #ffff55;
+            color: #ff99cc;
             text-align: center;
             line-height: 1.8;
-            text-shadow: 2px 2px 0 #000;
-            pointer-events: none;
+            text-shadow: 2px 2px 0 #000, 0 0 5px #ff55aa;
         }
         #stage {
             position: relative;
             width: 100%;
             flex-grow: 1;
             touch-action: none;
+            pointer-events: auto;
         }
         #firework-box {
             position: absolute;
             bottom: 25%; left: 50%;
             transform: translateX(-50%);
             width: 64px; height: 80px;
-            background: #2e2e2e;
-            border: 4px solid #4a4a4a;
+            background: #2b1625;
+            border: 4px solid #ff55aa;
             outline: 4px solid #000;
-            box-shadow: inset -6px -6px 0 #1a1a1a;
+            box-shadow: inset -6px -6px 0 #150a12;
         }
         #firework-box::after {
             content: '';
             position: absolute;
             top: 8px; left: 8px; right: 8px; bottom: 8px;
-            background: repeating-linear-gradient(45deg, #ff5555, #ff5555 10px, #1a1a1a 10px, #1a1a1a 20px);
+            background: repeating-linear-gradient(45deg, #ff3388, #ff3388 10px, #150a12 10px, #150a12 20px);
         }
         #fuse {
             position: absolute;
             top: -24px; left: 50%;
             width: 8px; height: 24px;
-            background: #555;
+            background: #444;
             transform: translateX(-50%);
         }
         #fuse::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #aaa 50%, transparent 50%);
+            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
             background-size: 100% 8px;
         }
         #fuse.burning::before {
-            background-image: linear-gradient(to bottom, #ff5555 50%, #ffaa00 50%);
+            background-image: linear-gradient(to bottom, #ff3388 50%, #ffcc00 50%);
             animation: fuseBurn 1.5s linear forwards;
         }
         @keyframes fuseBurn {
@@ -175,17 +180,17 @@
             bottom: 8%; left: 50%;
             transform: translateX(-50%);
             width: 44px; height: 64px;
-            background: #555555;
-            border: 4px solid #888888;
+            background: #ff55aa;
+            border: 4px solid #ff99cc;
             outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #222222;
+            box-shadow: inset -4px -4px 0 #b32d6b;
             z-index: 100;
         }
         #lighter-top {
             position: absolute;
             top: -12px; left: 6px;
             width: 24px; height: 12px;
-            background: #aaaaaa;
+            background: #dddddd;
             border: 4px solid #000;
             border-bottom: none;
         }
@@ -193,8 +198,8 @@
             position: absolute;
             top: -20px; left: 10px;
             width: 12px; height: 16px;
-            background: #ff5555;
-            outline: 2px solid #ffaa00;
+            background: #ff3388;
+            outline: 2px solid #ff99cc;
             opacity: 0;
             transform: scale(0);
         }
@@ -204,14 +209,14 @@
             animation: pixelFlicker 0.15s infinite steps(2);
         }
         @keyframes pixelFlicker {
-            0% { transform: scale(1) translate(2px, 0); background: #ff5555; }
-            100% { transform: scale(1.1) translate(-2px, -2px); background: #ffaa00; }
+            0% { transform: scale(1) translate(2px, 0); background: #ff3388; }
+            100% { transform: scale(1.1) translate(-2px, -2px); background: #ff77aa; }
         }
         
         /* --- AŞK MESAJI --- */
         #text-overlay {
             position: absolute;
-            top: 40%; left: 50%;
+            top: 42%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 5;
             text-align: center;
@@ -220,32 +225,34 @@
         }
         .love-message {
             font-family: 'Great Vibes', cursive;
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             color: #ffffff;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 85, 85, 0.6);
-            transition: opacity 2s ease, transform 2s ease;
+            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255, 51, 136, 0.7), 0 0 30px rgba(255, 153, 204, 0.5);
+            transition: opacity 2.5s ease, transform 2.5s ease;
             transform: translate(-50%, -50%) scale(0.9);
             position: absolute;
             left: 50%; width: 100%;
         }
         .love-message.show {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: translate(-50%, -50%) scale(1.02);
         }
         #replay-btn {
             position: absolute;
             bottom: 8%; left: 50%;
             transform: translateX(-50%) scale(0);
+            font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             padding: 12px 20px;
-            background: #555555;
-            color: #ffff55;
-            border: 4px solid #a9a9a9;
+            background: #ff55aa;
+            color: #fff;
+            border: 4px solid #ff99cc;
             outline: 4px solid #000;
-            box-shadow: inset -4px -4px 0 #333333;
+            box-shadow: inset -4px -4px 0 #b32d6b;
             cursor: pointer;
             z-index: 105;
+            pointer-events: auto;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
     </style>
@@ -255,7 +262,7 @@
     <div id="quiz-overlay">
         <div class="quiz-box">
             <div class="quiz-title" id="quiz-question">Her şeyin başladığı gün?</div>
-            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
+            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off" autofocus>
             <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
             <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
         </div>
@@ -300,7 +307,7 @@
         let showActive = false;
         let finalRocketLaunched = false;
 
-        // Pixel Art Harf Matrisleri
+        // Romantik Pembe/Fuşya Piksellerle "# İ S S A B" Matrisi
         const textGrid = {
             '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
             'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
@@ -310,37 +317,43 @@
         };
         const wordSequence = ["#", "İ", "S", "S", "A", "B"];
 
-        function resize() { 
-            canvas.width = window.innerWidth; 
-            canvas.height = window.innerHeight; 
+        // Klavyeden etkilenmeyen, kesin ve güvenli ekran boyutu hesaplama fonksiyonu
+        function safeResize() { 
+            canvas.width = Math.max(window.innerWidth, window.screen.width); 
+            canvas.height = Math.max(window.innerHeight, window.visualViewport ? window.visualViewport.height : window.innerHeight); 
         }
+        safeResize(); // İlk açılışta güvenle boyutlandır
 
         function temizle(metin) {
             if (!metin) return "";
             return metin.trim().toLowerCase()
                 .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
                 .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                .replace(/\s+/g, ''); // Boşlukları tamamen temizler
+                .replace(/\s+/g, '');
         }
 
         function checkAnswer(e) {
             if(e) e.preventDefault();
             
-            if (document.activeElement) {
-                document.activeElement.blur();
-            }
+            // 1. Klavyeyi anında kapatarak tarayıcıyı rahatlat
+            if (document.activeElement) document.activeElement.blur();
 
             const girdi = temizle(quizAnswer.value);
             
-            // "9mart" girdisini kontrol eder
             if(girdi === "9mart") {
+                // 2. Ekran donmasını engellemek için geçişi milisaniyelik zaman dilimine yay
                 setTimeout(() => {
-                    quizOverlay.style.display = 'none'; 
-                    uiContainer.style.display = 'flex';
-                    canvas.style.display = 'block';
-                    window.addEventListener('resize', resize); 
-                    resize();
-                }, 100);
+                    quizOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        quizOverlay.style.display = 'none';
+                        uiContainer.style.display = 'flex';
+                        canvas.style.opacity = '1';
+                        
+                        // Garanti boyut yenilemesi
+                        window.addEventListener('resize', safeResize);
+                        safeResize();
+                    }, 200);
+                }, 50);
             } else {
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
@@ -376,6 +389,7 @@
             const touch = e.touches ? e.touches[0] : e;
             let currentX = touch.clientX - startX;
             let currentY = touch.clientY - startY;
+            
             if(currentX < 0) currentX = 0;
             if(currentX > window.innerWidth - 44) currentX = window.innerWidth - 44;
             lighter.style.left = currentX + 'px';
@@ -409,9 +423,9 @@
             }, 1500);
         }
 
-        // --- MINECRAFT STİLİ KARE PARÇACIK MOTORU ---
-        class MinecraftParticle {
-            constructor(x, y, vx, vy, color, size, fade, gravity = 0.08) {
+        // --- ROMANTİK MINECRAFT PIXEL PARÇACIK MOTORU ---
+        class MinecraftLoveParticle {
+            constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
                 this.x = x; this.y = y;
                 this.vx = vx; this.vy = vy;
                 this.color = color;
@@ -421,8 +435,8 @@
                 this.alpha = 1;
             }
             update() {
-                this.vx *= 0.95; this.vy *= 0.95; // Minecraft tipi sürtünme
-                this.vy += this.gravity;          // Yerçekimi dökülmesi
+                this.vx *= 0.94; this.vy *= 0.94;
+                this.vy += this.gravity;
                 this.x += this.vx; this.y += this.vy;
                 this.alpha -= this.fade;
             }
@@ -430,7 +444,6 @@
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
-                // Kare (Pixel) çizimi
                 ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
                 ctx.restore();
             }
@@ -440,7 +453,7 @@
             constructor(startX, startY, targetY, isFinal = false) {
                 this.x = startX; this.y = startY; this.targetY = targetY;
                 this.isFinal = isFinal;
-                this.vy = isFinal ? -5 : -Math.random() * 3 - 5;
+                this.vy = isFinal ? -4.5 : -Math.random() * 3 - 5;
                 this.alive = true;
             }
             update() {
@@ -453,37 +466,37 @@
                         explodeStandard(this.x, this.y);
                     }
                 }
-                // Roket arkası iz pikselleri
                 if (Math.random() < 0.3) {
-                    particles.push(new MinecraftParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#ffaa00', 4, 0.05, 0.02));
+                    particles.push(new MinecraftLoveParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#ffb3d9', 4, 0.05, 0.02));
                 }
             }
             draw() {
                 ctx.save();
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 2, this.y, 4, 12); // Kare roket gövdesi
+                ctx.fillRect(this.x - 2, this.y, 4, 12);
                 ctx.restore();
             }
         }
 
         function explodeStandard(cx, cy) {
-            // Canlı Minecraft havai fişek renkleri
-            const colors = ['#ff5555', '#55ff55', '#ffff55', '#55ffff', '#ff55ff', '#ffaa00'];
+            // Tamamen Romantik Renk Skalası (Fuşya, Pembe, Toz Pembe, Rose, Saf Beyaz)
+            const colors = ['#ff3388', '#ff66aa', '#ffb3d9', '#ff0055', '#ffffff', '#e60073'];
             const chosenColor = colors[Math.floor(Math.random() * colors.length)];
-            const isHeart = Math.random() < 0.4;
+            const isHeart = Math.random() < 0.5;
 
             if (isHeart) {
-                for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
-                    const r = 5;
+                // Kalp Şeklinde Dağılan Minecraft Pikselleri
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.09) {
+                    const r = 4.5;
                     const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.12;
                     const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.12;
-                    particles.push(new MinecraftParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.01 + 0.006, 0.04));
+                    particles.push(new MinecraftLoveParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.01 + 0.006, 0.03));
                 }
             } else {
-                for (let i = 0; i < 60; i++) {
+                for (let i = 0; i < 55; i++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 6 + 1;
-                    particles.push(new MinecraftParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01, 0.06));
+                    const speed = Math.random() * 5 + 1;
+                    particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01, 0.05));
                 }
             }
         }
@@ -500,23 +513,4 @@
                 if (matrix) {
                     matrix.forEach(([row, col]) => {
                         const px = startX + (col * pixelSize);
-                        const py = cy + (row * pixelSize) - (3.5 * pixelSize);
-                        
-                        const color = char === '#' ? '#55ffff' : '#ff55ff';
-                        
-                        // Yazının havada uzun süre asılı kalması için fade oranı çok düşürüldü (0.0007)
-                        // Yerçekimi etkisi de (0.002) yapılarak uzun süre sabit kalıp sonra dökülmesi sağlandı
-                        particles.push(new MinecraftParticle(
-                            px, py, 
-                            Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, 
-                            color, pixelSize, Math.random() * 0.0009 + 0.0007, 0.002
-                        ));
-                    });
-                }
-                startX += charWidth + spacing;
-            });
-
-            // Alt kısımdaki patlama efekt pikselleri
-            for (let i = 0; i < 100; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                con
+                        const py = cy + (ro
