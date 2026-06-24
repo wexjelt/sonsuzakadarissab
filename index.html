@@ -228,10 +228,9 @@
         }
         .love-message {
             font-family: 'Great Vibes', cursive;
-            font-size: 3.5rem; /* Daha belirgin ve büyük */
+            font-size: 3.5rem;
             color: #ffffff;
             opacity: 0;
-            /* Romantik bir parlama efekti */
             text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6), 0 0 30px rgba(255, 0, 98, 0.4);
             transition: opacity 2s ease, transform 2s ease;
             transform: translate(-50%, -50%) scale(0.9);
@@ -286,8 +285,6 @@
     <button id="replay-btn">TEKRAR OYNAT</button>
 
     <script>
-        const DOGRU_CEVAP = "İsviçre"; 
-
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const lighter = document.getElementById('lighter');
@@ -323,9 +320,11 @@
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
+        // Garantili ve basit kelime temizleme filtresi
         function temizle(metin) {
+            if (!metin) return "";
             return metin
-                .replace(/\s+/g, '')
+                .trim()
                 .toLowerCase()
                 .replace(/ı/g, 'i')
                 .replace(/ğ/g, 'g')
@@ -336,10 +335,10 @@
         }
 
         function checkAnswer() {
-            const temizKullaniciCevabi = temizle(quizAnswer.value);
-            const temizDogruCevap = temizle(DOGRU_CEVAP);
-
-            if(temizKullaniciCevabi === temizDogruCevap && temizKullaniciCevabi !== "") {
+            const girdi = temizle(quizAnswer.value);
+            
+            // "isvicre" veya "İsviçre" yazıldığında doğrudan kabul edilir
+            if(girdi === "isvicre" || girdi === "isviçre") {
                 quizOverlay.style.opacity = '0';
                 setTimeout(() => {
                     quizOverlay.style.display = 'none';
@@ -439,7 +438,6 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-                // Parlama (Glow) Efekti
                 ctx.shadowBlur = this.size * 2;
                 ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
@@ -468,7 +466,6 @@
                     }
                 }
                 if (Math.random() < 0.4) {
-                    // Roket arkasındaki kuyruk izi
                     particles.push(new GlowingParticle(this.x, this.y, Math.random() * 1 - 0.5, 0.5, '#ffaa00', 3, 0.04, 0.01, 0.98));
                 }
             }
@@ -482,7 +479,6 @@
             }
         }
 
-        // Renkli Standart Yuvarlak ve Kalp Havai Fişekler
         function explodeStandard(cx, cy) {
             const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#b026ff'];
             const chosenColor = colors[Math.floor(Math.random() * colors.length)];
@@ -504,9 +500,8 @@
             }
         }
 
-        // BÜYÜK FİNAL: Gökyüzünde #İSSAB Yazdıran Patlama Fonksiyonu
         function explodeFinalText(cx, cy) {
-            const pixelSize = 7; // Harfleri oluşturan parça büyüklüğü
+            const pixelSize = 7; 
             const charWidth = 6 * pixelSize; 
             const spacing = 3 * pixelSize; 
             const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
@@ -519,4 +514,8 @@
                         const px = startX + (col * pixelSize);
                         const py = cy + (row * pixelSize) - (3.5 * pixelSize);
                         
-                     
+                        const color = char === '#' ? '#00ffcc' : '#ff007f';
+                        for(let k=0; k<2; k++){
+                            particles.push(new GlowingParticle(
+                                px + (Math.random()*4-2), py + (Math.random()*4-2), 
+                                Math.random() * 0.4 - 0.2, M
