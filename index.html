@@ -1,44 +1,65 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sonsuz Bir Hikaye...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sınama Ekranı</title>
     <style>
-        body { background: #110b11; color: white; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { border: 4px solid #ff007f; padding: 20px; text-align: center; width: 80%; max-width: 300px; }
-        input { width: 90%; padding: 10px; background: black; border: 2px solid #ff007f; color: white; text-align: center; margin-bottom: 10px; font-size: 16px; }
-        button { background: #ff007f; color: white; border: none; padding: 10px 20px; font-weight: bold; width: 100%; }
-        #error { color: red; margin-top: 10px; display: none; }
+        /* Tarayıcının dokunma gecikmesini kapatıyoruz */
+        html { touch-action: manipulation; }
+        body { 
+            background: #110b11; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; font-family: sans-serif;
+        }
+        .container { 
+            background: #211421; border: 5px solid #ff007f; padding: 20px; 
+            text-align: center; z-index: 99999; width: 80%;
+        }
+        input { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            background: black; border: 2px solid #ff007f; color: #00ffcc;
+            font-size: 16px; /* 16px altı iPhone'da otomatik zoom yapar, bunu engelledik */
+        }
+        button { 
+            background: #ff007f; color: white; border: none; 
+            padding: 15px; width: 100%; font-size: 16px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <p>Beraber gitmek istediğimiz ülke?<br>(Baş harfi S)</p>
-    <form id="loginForm">
-        <input type="text" id="cevap" placeholder="Cevabı yaz..." required autocomplete="off">
-        <button type="submit">GİRİŞ YAP</button>
-    </form>
-    <div id="error">Yanlış cevap, tekrar dene...</div>
+<div class="container">
+    <p style="color:white; font-size: 12px;">Sence hangi ülke?</p>
+    <input type="text" id="girdi" placeholder="Cevabı yaz..." autocomplete="off">
+    <button id="buton">GİRİŞ YAP</button>
 </div>
 
 <script>
-    const form = document.getElementById('loginForm');
-    const input = document.getElementById('cevap');
-    const error = document.getElementById('error');
+    const btn = document.getElementById('buton');
+    const input = document.getElementById('girdi');
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const val = input.value.toLowerCase().replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c');
-        
+    function kontrolEt() {
+        const val = input.value.toLowerCase().trim();
+        // Test için alert ekledim, eğer bu çalışırsa buton tetikleniyor demektir.
         if (val === "isvicre" || val === "isviçre") {
-            alert("Doğru! Yönlendiriliyorsun...");
-            // Buraya oyunun olduğu kısmı tetikleyen kodu ekleyebilirsin
-            window.location.href = "oyun_sayfan.html"; // Ya da gizli div'i göster
+            alert("Tebrikler! Doğru cevap.");
         } else {
-            error.style.display = "block";
-            input.value = "";
+            alert("Yanlış cevap, tekrar dene.");
+        }
+    }
+
+    // click yerine pointerup kullanıyoruz (En garantili yöntem)
+    btn.addEventListener('pointerup', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        kontrolEt();
+    });
+
+    // Klavyeden de çalışması için
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            kontrolEt();
         }
     });
 </script>
