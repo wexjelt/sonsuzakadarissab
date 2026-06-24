@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sonsuz Bir Hikaye...</title>
+    <title>Sonsuv Bir Hikaye...</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sacramento&display=swap" rel="stylesheet">
     <style>
         * {
@@ -308,12 +308,22 @@
         const AudioFX = {
             ctx: null,
             init() { 
-                if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                try {
+                    if(!this.ctx) {
+                        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if(this.ctx && this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                } catch(e) {
+                    console.log("Ses motoru başlatılamadı:", e);
+                }
             },
             playClick() {
                 try {
-                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    this.init(); 
+                    if(!this.ctx) return;
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
                     osc.type = 'triangle'; osc.frequency.setValueAtTime(150, this.ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.08);
                     gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
@@ -322,7 +332,9 @@
             },
             playBurn() {
                 try {
-                    this.init(); const bufferSize = this.ctx.sampleRate * 1.5, buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate), data = buffer.getChannelData(0);
+                    this.init(); 
+                    if(!this.ctx) return;
+                    const bufferSize = this.ctx.sampleRate * 1.5, buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate), data = buffer.getChannelData(0);
                     for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                     const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
                     const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1000;
@@ -332,7 +344,9 @@
             },
             playLaunch() {
                 try {
-                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    this.init(); 
+                    if(!this.ctx) return;
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
                     osc.type = 'sawtooth'; osc.frequency.setValueAtTime(45, this.ctx.currentTime);
                     osc.frequency.linearRampToValueAtTime(280, this.ctx.currentTime + 1.2);
                     gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2);
@@ -341,7 +355,9 @@
             },
             playExplode() {
                 try {
-                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    this.init(); 
+                    if(!this.ctx) return;
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
                     osc.type = 'triangle'; osc.frequency.setValueAtTime(90, this.ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.6);
                     gain.gain.setValueAtTime(0.5, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.6);
@@ -352,6 +368,7 @@
             },
             playCrack() {
                 try {
+                    if(!this.ctx) return;
                     const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
                     osc.type = 'square'; osc.frequency.setValueAtTime(Math.random() * 300 + 200, this.ctx.currentTime);
                     gain.gain.setValueAtTime(0.04, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
@@ -380,9 +397,10 @@
             const temizDogruCevap = temizle(DOGRU_CEVAP);
 
             if(temizKullaniciCevabi === temizDogruCevap && temizKullaniciCevabi !== "") {
-                AudioFX.init();
+                // Güvenli ses başlatma tetikleyicisi
                 AudioFX.playClick();
                 
+                // Ekran geçişleri sesten bağımsız çalışsın diye hata koruması altına alındı
                 quizOverlay.style.opacity = '0';
                 setTimeout(() => {
                     quizOverlay.style.display = 'none';
@@ -491,22 +509,4 @@
                     this.size = 4;
                     this.fade = 0.03;
                     this.gravity = 0.01;
-                    this.drag = 0.95;
-                } else {
-                    this.size = 5;
-                    this.fade = Math.random() * 0.012 + 0.008;
-                    this.gravity = 0.07;
-                    this.drag = 0.96;
-                }
-            }
-            update() {
-                this.vx *= this.drag; this.vy *= this.drag;
-                this.vy += this.gravity;
-                this.x += this.vx; this.y += this.vy;
-                this.alpha -= this.fade;
-            }
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                if (this.type === 'rose') {
-                    ctx.fillSty
+                    this.dra
