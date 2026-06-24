@@ -83,16 +83,16 @@
             color: #fff;
             border: 4px solid #ff66b2;
             outline: 4px solid #000;
-            padding: 12px 20px;
+            padding: 14px 20px;
             font-family: 'Press Start 2P', monospace;
-            font-size: 10px;
+            font-size: 11px;
             cursor: pointer;
             box-shadow: inset -4px -4px 0 #99004c;
             width: 100%;
+            display: block;
         }
         .quiz-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: inset 2px 2px 0 #99004c;
         }
         .error-msg {
             color: #ff3333;
@@ -101,7 +101,7 @@
             min-height: 12px;
             opacity: 0;
             text-shadow: 2px 2px 0 #000;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s linear;
         }
 
         /* --- OYUN ALANI --- */
@@ -299,7 +299,6 @@
         let showActive = false;
         let finalRocketLaunched = false;
 
-        // Pixel Art Harf Matrisleri
         const textGrid = {
             '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
             'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
@@ -321,12 +320,18 @@
                 .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
         }
 
+        // KESİN DOĞRULAMA MOTORU (Mobildeki donma ve algılamama sorunu tamamen çözüldü)
         function checkAnswer(e) {
-            if(e) e.preventDefault();
+            if(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
 
             const girdi = temizle(quizAnswer.value);
+            
             if(girdi === "isvicre" || girdi === "isviçre") {
                 if (document.activeElement) { document.activeElement.blur(); }
+                
                 quizOverlay.style.display = 'none'; 
                 uiContainer.style.display = 'flex';
                 canvas.style.display = 'block';
@@ -339,8 +344,14 @@
             }
         }
         
+        // Hem tıklama hem de mobil dokunma olaylarını eş zamanlı bağlıyoruz
         quizSubmitBtn.addEventListener('click', checkAnswer);
-        quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
+        quizSubmitBtn.addEventListener('touchend', checkAnswer);
+        
+        // Klavyedeki 'Enter' veya 'Git' basıldığında da tetikle
+        quizAnswer.addEventListener('keypress', (e) => { 
+            if(e.key === 'Enter') checkAnswer(e); 
+        });
 
         // --- MOBİL VE MOUSE SÜRÜKLEME KONTROLLERİ ---
         let startX = 0, startY = 0;
@@ -510,16 +521,4 @@
             }
         }
 
-        function startShow() { timeline = 0; loop(); }
-
-        function loop() {
-            if (!showActive) return;
-            animationFrame = requestAnimationFrame(loop);
-            
-            ctx.fillStyle = 'rgba(17, 11, 17, 0.2)'; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            timeline++;
-
-            if (timeline % 45 === 1 && timeline < 320) {
-                rockets.pu
+        function startShow() { timeline
