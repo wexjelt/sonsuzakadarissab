@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sonsuz Bir Hikaye...</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sacramento&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -29,7 +29,6 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            image-rendering: pixelated;
         }
         
         /* --- SORU EKRANI MODALI --- */
@@ -49,8 +48,8 @@
         }
         .quiz-box {
             background: #111;
-            border: 4px solid #aa00ff;
-            box-shadow: 0 0 20px rgba(170,0,255,0.4), inset -6px -6px 0 #080808;
+            border: 4px solid #ff007f;
+            box-shadow: 0 0 20px rgba(255,0,127,0.4), inset -6px -6px 0 #080808;
             padding: 30px 20px;
             width: 100%;
             max-width: 360px;
@@ -84,18 +83,18 @@
         }
         .quiz-btn {
             background: #000;
-            color: #aa00ff;
-            border: 4px solid #aa00ff;
+            color: #ff007f;
+            border: 4px solid #ff007f;
             padding: 12px 20px;
             font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             cursor: pointer;
-            box-shadow: 4px 4px 0 #4a0072;
+            box-shadow: 4px 4px 0 #4a0025;
             width: 100%;
         }
         .quiz-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 #4a0072;
+            box-shadow: 2px 2px 0 #4a0025;
         }
         .error-msg {
             color: #ff3333;
@@ -126,13 +125,13 @@
             text-align: center;
             line-height: 1.8;
             text-transform: uppercase;
-            text-shadow: 0 0 5px #aa00ff, 0 0 10px #aa00ff;
+            text-shadow: 0 0 5px #ff007f, 0 0 10px #ff007f;
             animation: neonPulse 1.5s infinite alternate;
             pointer-events: none;
         }
         @keyframes neonPulse {
-            from { opacity: 0.6; text-shadow: 0 0 5px #aa00ff; }
-            to { opacity: 1; text-shadow: 0 0 10px #aa00ff, 0 0 20px #ff00ff; }
+            from { opacity: 0.6; text-shadow: 0 0 5px #ff007f; }
+            to { opacity: 1; text-shadow: 0 0 10px #ff007f, 0 0 20px #ff00ff; }
         }
         #stage {
             position: relative;
@@ -146,7 +145,7 @@
             width: 76px; height: 96px;
             background: #141414;
             border: 4px solid #282828;
-            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(170,0,255,0.15);
+            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(255,0,127,0.15);
             image-rendering: pixelated;
         }
         #firework-box::after {
@@ -216,9 +215,11 @@
             0% { transform: scale(1) translate(1px, 0); background: #ff3300; }
             100% { transform: scale(1.1) translate(-1px, -1px); background: #ffcc00; }
         }
+        
+        /* --- YAZI OVERLAY KATMANI --- */
         #text-overlay {
             position: absolute;
-            top: 45%; left: 50%;
+            top: 40%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 5;
             text-align: center;
@@ -226,16 +227,20 @@
             pointer-events: none;
         }
         .love-message {
-            font-family: 'Sacramento', cursive;
-            font-size: 3rem;
-            color: #fff;
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem; /* Daha belirgin ve büyük */
+            color: #ffffff;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 25px rgba(255,0,102,0.5);
-            transition: opacity 2s, transform 2s;
+            /* Romantik bir parlama efekti */
+            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6), 0 0 30px rgba(255, 0, 98, 0.4);
+            transition: opacity 2s ease, transform 2s ease;
+            transform: translate(-50%, -50%) scale(0.9);
+            position: absolute;
+            left: 50%; width: 100%;
         }
         .love-message.show {
             opacity: 1;
-            transform: scale(1.05);
+            transform: translate(-50%, -50%) scale(1.05);
         }
         #replay-btn {
             position: absolute;
@@ -303,6 +308,17 @@
         let animationFrame;
         let timeline = 0;
         let showActive = false;
+        let finalRocketLaunched = false;
+
+        // #ISSAB Kelime Haritası Matrisi (Piksel Sanatı Tasarımı)
+        const textGrid = {
+            '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
+            'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
+            'S': [[0,1],[0,2],[0,3],[1,0],[2,0],[3,1],[3,2],[4,3],[5,3],[6,0],[6,1],[6,2]],
+            'A': [[0,2],[1,1],[1,3],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,4],[5,0],[5,4],[6,0],[6,4]],
+            'B': [[0,0],[0,1],[0,2],[0,3],[1,0],[1,4],[2,0],[2,4],[3,0],[3,1],[3,2],[3,3],[4,0],[4,4],[5,0],[5,4],[6,0],[6,1],[6,2],[6,3]]
+        };
+        const wordSequence = ["#", "İ", "S", "S", "A", "B"];
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
@@ -343,10 +359,7 @@
         let startX = 0, startY = 0;
 
         function onTouchStart(e) {
-            if (e.target === lighter || lighter.contains(e.target)) {
-                e.preventDefault();
-            }
-            
+            if (e.target === lighter || lighter.contains(e.target)) { e.preventDefault(); }
             if (!isIgnited) {
                 isIgnited = true;
                 lighter.classList.add('ignited');
@@ -356,7 +369,6 @@
                 lighter.style.left = rect.left + 'px';
                 lighter.style.top = rect.top + 'px';
             }
-            
             isDragging = true;
             const touch = e.touches ? e.touches[0] : e;
             startX = touch.clientX - lighter.offsetLeft;
@@ -366,20 +378,16 @@
         function onTouchMove(e) {
             if (!isDragging) return;
             e.preventDefault();
-            
             const touch = e.touches ? e.touches[0] : e;
             let currentX = touch.clientX - startX;
             let currentY = touch.clientY - startY;
-            
             if(currentX < 0) currentX = 0;
             if(currentX > window.innerWidth - 48) currentX = window.innerWidth - 48;
-
             lighter.style.left = currentX + 'px';
             lighter.style.top = currentY + 'px';
 
             const fRect = fuse.getBoundingClientRect();
             const flameRect = document.getElementById('flame').getBoundingClientRect();
-
             if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
                 flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
                 triggerSequence();
@@ -387,11 +395,9 @@
         }
 
         function onTouchEnd() { isDragging = false; }
-
         lighter.addEventListener('touchstart', onTouchStart, { passive: false });
         window.addEventListener('touchmove', onTouchMove, { passive: false });
         window.addEventListener('touchend', onTouchEnd);
-
         lighter.addEventListener('mousedown', onTouchStart);
         window.addEventListener('mousemove', onTouchMove);
         window.addEventListener('mouseup', onTouchEnd);
@@ -401,7 +407,6 @@
             lighter.style.display = 'none';
             fuse.classList.add('burning');
             infoText.style.opacity = '0';
-
             setTimeout(() => {
                 uiContainer.style.transition = 'opacity 0.6s';
                 uiContainer.style.opacity = '0';
@@ -413,30 +418,17 @@
             }, 1500);
         }
 
-        // --- PARTİKÜL VE HAVAİ FİŞEK MOTORU ---
-        class PixelParticle {
-            constructor(x, y, vx, vy, type = 'spark') {
+        // --- GELİŞMİŞ PARLAK HAVAİ FİŞEK MOTORU ---
+        class GlowingParticle {
+            constructor(x, y, vx, vy, color, size, fade, gravity = 0.05, drag = 0.96) {
                 this.x = x; this.y = y;
                 this.vx = vx; this.vy = vy;
-                this.type = type;
+                this.color = color;
+                this.size = size;
+                this.fade = fade;
+                this.gravity = gravity;
+                this.drag = drag;
                 this.alpha = 1;
-                
-                if (type === 'rose') {
-                    this.size = 6;
-                    this.fade = Math.random() * 0.006 + 0.004;
-                    this.gravity = 0.04;
-                    this.drag = 0.98;
-                } else if (type === 'trail') {
-                    this.size = 4;
-                    this.fade = 0.03;
-                    this.gravity = 0.01;
-                    this.drag = 0.95;
-                } else {
-                    this.size = 5;
-                    this.fade = Math.random() * 0.012 + 0.008;
-                    this.gravity = 0.07;
-                    this.drag = 0.96;
-                }
             }
             update() {
                 this.vx *= this.drag; this.vy *= this.drag;
@@ -447,99 +439,84 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-                if (this.type === 'rose') {
-                    ctx.fillStyle = '#e60036';
-                } else if (this.type === 'trail') {
-                    ctx.fillStyle = '#ffaa00';
-                } else {
-                    const colors = ['#00ffcc', '#ff00ff', '#ffff00', '#00ffff', '#ff3366'];
-                    ctx.fillStyle = colors[Math.floor(this.x + this.y) % colors.length];
-                }
-                ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
+                // Parlama (Glow) Efekti
+                ctx.shadowBlur = this.size * 2;
+                ctx.shadowColor = this.color;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
             }
         }
 
         class Rocket {
-            constructor(startX, startY, targetY) {
-                this.x = startX;
-                this.y = startY;
-                this.targetY = targetY;
-                this.vy = -Math.random() * 4 - 7;
+            constructor(startX, startY, targetY, isFinal = false) {
+                this.x = startX; this.y = startY; this.targetY = targetY;
+                this.isFinal = isFinal;
+                this.vy = isFinal ? -6 : -Math.random() * 3 - 6;
                 this.alive = true;
             }
             update() {
                 this.y += this.vy;
                 if (this.y <= this.targetY) {
                     this.alive = false;
-                    explodeFirework(this.x, this.y);
+                    if (this.isFinal) {
+                        explodeFinalText(this.x, this.y);
+                    } else {
+                        explodeStandard(this.x, this.y);
+                    }
                 }
                 if (Math.random() < 0.4) {
-                    particles.push(new PixelParticle(this.x, this.y, Math.random() * 2 - 1, 1, 'trail'));
+                    // Roket arkasındaki kuyruk izi
+                    particles.push(new GlowingParticle(this.x, this.y, Math.random() * 1 - 0.5, 0.5, '#ffaa00', 3, 0.04, 0.01, 0.98));
                 }
             }
             draw() {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffffff';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 4, 8);
+                ctx.fillRect(this.x - 1, this.y, 3, 10);
+                ctx.restore();
             }
         }
 
-        function explodeFirework(cx, cy) {
-            for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
-                const r = 5;
-                const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.1;
-                const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.1;
-                particles.push(new PixelParticle(cx, cy, vx, vy, 'rose'));
-            }
-            for (let i = 0; i < 30; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 2;
-                particles.push(new PixelParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, 'spark'));
+        // Renkli Standart Yuvarlak ve Kalp Havai Fişekler
+        function explodeStandard(cx, cy) {
+            const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#b026ff'];
+            const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+            const isHeart = Math.random() < 0.5;
+
+            if (isHeart) {
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.06) {
+                    const r = 5.5;
+                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.1;
+                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.1;
+                    particles.push(new GlowingParticle(cx, cy, vx, vy, chosenColor, 5, Math.random() * 0.008 + 0.005, 0.03, 0.98));
+                }
+            } else {
+                for (let i = 0; i < 70; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 5 + 1;
+                    particles.push(new GlowingParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 4, Math.random() * 0.015 + 0.008));
+                }
             }
         }
 
-        function startShow() {
-            timeline = 0;
-            loop();
-        }
+        // BÜYÜK FİNAL: Gökyüzünde #İSSAB Yazdıran Patlama Fonksiyonu
+        function explodeFinalText(cx, cy) {
+            const pixelSize = 7; // Harfleri oluşturan parça büyüklüğü
+            const charWidth = 6 * pixelSize; 
+            const spacing = 3 * pixelSize; 
+            const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
+            let startX = cx - (totalWidth / 2);
 
-        function loop() {
-            if (!showActive) return;
-            animationFrame = requestAnimationFrame(loop);
-            
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            timeline++;
-
-            if (timeline % 60 === 1 && timeline < 400) {
-                rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.4) + canvas.height * 0.1));
-            }
-
-            if (timeline === 180) {
-                msg.classList.add('show');
-            }
-
-            if (timeline === 500) {
-                replayBtn.style.transform = 'translateX(-50%) scale(1)';
-            }
-
-            rockets.forEach((r, index) => {
-                r.update();
-                r.draw();
-                if (!r.alive) rockets.splice(index, 1);
-            });
-
-            particles.forEach((p, index) => {
-                p.update();
-                p.draw();
-                if (p.alpha <= 0) particles.splice(index, 1);
-            });
-        }
-
-        replayBtn.addEventListener('click', () => {
-            location.reload();
-        });
-    </script>
-</body>
-</html>
+            wordSequence.forEach((char) => {
+                const matrix = textGrid[char];
+                if (matrix) {
+                    matrix.forEach(([row, col]) => {
+                        const px = startX + (col * pixelSize);
+                        const py = cy + (row * pixelSize) - (3.5 * pixelSize);
+                        
+                     
