@@ -252,12 +252,12 @@
 <body>
 
     <div id="quiz-overlay">
-        <div class="quiz-box">
+        <form class="quiz-box" id="quiz-form">
             <div class="quiz-title" id="quiz-question">Beraber gitmek istediğimiz ülke?<br>(İpucu: Baş harfi sen)</div>
             <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
-            <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
+            <button type="submit" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
             <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
-        </div>
+        </form>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -286,8 +286,8 @@
         const msg = document.getElementById('msg');
         const replayBtn = document.getElementById('replay-btn');
         const quizOverlay = document.getElementById('quiz-overlay');
+        const quizForm = document.getElementById('quiz-form');
         const quizAnswer = document.getElementById('quiz-answer');
-        const quizSubmitBtn = document.getElementById('quiz-submit-btn');
         const quizError = document.getElementById('quiz-error');
 
         let isIgnited = false;
@@ -320,12 +320,9 @@
                 .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
         }
 
-        // KESİN DOĞRULAMA MOTORU (Mobildeki donma ve algılamama sorunu tamamen çözüldü)
-        function checkAnswer(e) {
-            if(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
+        // Tıklama karmaşası yerine doğrudan Form Submit dinleniyor. En güvenli yöntem.
+        quizForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Sayfanın yenilenmesini engeller
 
             const girdi = temizle(quizAnswer.value);
             
@@ -342,15 +339,6 @@
                 quizAnswer.value = "";
                 setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
             }
-        }
-        
-        // Hem tıklama hem de mobil dokunma olaylarını eş zamanlı bağlıyoruz
-        quizSubmitBtn.addEventListener('click', checkAnswer);
-        quizSubmitBtn.addEventListener('touchend', checkAnswer);
-        
-        // Klavyedeki 'Enter' veya 'Git' basıldığında da tetikle
-        quizAnswer.addEventListener('keypress', (e) => { 
-            if(e.key === 'Enter') checkAnswer(e); 
         });
 
         // --- MOBİL VE MOUSE SÜRÜKLEME KONTROLLERİ ---
@@ -412,113 +400,4 @@
             }, 1500);
         }
 
-        // --- MINECRAFT STİL KARE PARÇACIK MOTORU ---
-        class MinecraftParticle {
-            constructor(x, y, vx, vy, color, size, fade, gravity = 0.06, drag = 0.95) {
-                this.x = x; this.y = y;
-                this.vx = vx; this.vy = vy;
-                this.color = color;
-                this.size = size;
-                this.fade = fade;
-                this.gravity = gravity;
-                this.drag = drag;
-                this.alpha = 1;
-            }
-            update() {
-                this.vx *= this.drag; this.vy *= this.drag;
-                this.vy += this.gravity;
-                this.x += this.vx; this.y += this.vy;
-                this.alpha -= this.fade;
-            }
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
-                ctx.restore();
-            }
-        }
-
-        class Rocket {
-            constructor(startX, startY, targetY, isFinal = false) {
-                this.x = startX; this.y = startY; this.targetY = targetY;
-                this.isFinal = isFinal;
-                this.vy = isFinal ? -5 : -Math.random() * 3 - 6;
-                this.alive = true;
-            }
-            update() {
-                this.y += this.vy;
-                if (this.y <= this.targetY) {
-                    this.alive = false;
-                    if (this.isFinal) {
-                        explodeFinalText(this.x, this.y);
-                    } else {
-                        explodeStandard(this.x, this.y);
-                    }
-                }
-                if (Math.random() < 0.4) {
-                    particles.push(new MinecraftParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#555555', 4, 0.05, 0.01, 0.98));
-                }
-            }
-            draw() {
-                ctx.save();
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 2, this.y, 4, 12);
-                ctx.restore();
-            }
-        }
-
-        function explodeStandard(cx, cy) {
-            const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#ffffff'];
-            const chosenColor = colors[Math.floor(Math.random() * colors.length)];
-            const isHeart = Math.random() < 0.5;
-
-            if (isHeart) {
-                for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
-                    const r = 5;
-                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.11;
-                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.11;
-                    particles.push(new MinecraftParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.015 + 0.01, 0.04));
-                }
-            } else {
-                for (let i = 0; i < 60; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 5 + 1;
-                    particles.push(new MinecraftParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01));
-                }
-            }
-        }
-
-        function explodeFinalText(cx, cy) {
-            const pixelSize = Math.max(5, Math.min(8, window.innerWidth / 55)); 
-            const charWidth = 6 * pixelSize; 
-            const spacing = 3 * pixelSize; 
-            const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
-            let startX = cx - (totalWidth / 2);
-
-            wordSequence.forEach((char) => {
-                const matrix = textGrid[char];
-                if (matrix) {
-                    matrix.forEach(([row, col]) => {
-                        const px = startX + (col * pixelSize);
-                        const py = cy + (row * pixelSize) - (3.5 * pixelSize);
-                        const color = char === '#' ? '#00ffcc' : '#ff007f';
-                        
-                        particles.push(new MinecraftParticle(
-                            px, py, 
-                            Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, 
-                            color, pixelSize, 0.00015, 0.0005, 0.99
-                        ));
-                    });
-                }
-                startX += charWidth + spacing;
-            });
-
-            for (let i = 0; i < 120; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 8 + 2;
-                particles.push(new MinecraftParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.01 + 0.005, 0.05, 0.96));
-            }
-        }
-
-        function startShow() { timeline
+        // --- MINECRAFT STİL KARE PAR
