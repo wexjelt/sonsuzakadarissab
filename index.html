@@ -276,7 +276,6 @@
     <button id="replay-btn">TEKRAR OYNAT</button>
 
     <script>
-        // DOM Elemanları (Hatalı atamalar ve eksik id aramaları tamamen temizlendi)
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const lighter = document.getElementById('lighter');
@@ -315,16 +314,15 @@
         window.addEventListener('resize', forceResize);
         forceResize();
 
-        // KÖKTEN ARINDIRILMIŞ KONTROL FONKSİYONU
+        // CEVABI 09.03.2026 FORMATINA GÖRE DOĞRULAYAN YENİ SİSTEM
         function handleVerification() {
             quizAnswer.blur();
 
-            let text = quizAnswer.value.trim().toLowerCase()
-                .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
-                .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                .replace(/[^a-z0-9]/g, '');
+            // Girdiyi temizle (noktaları temizler ve saf rakamları karşılaştırır)
+            let text = quizAnswer.value.trim().replace(/[^0-9]/g, '');
 
-            if (text === "9mart" || text === "09mart" || text === "9" || text === "0903" || text === "93") {
+            // "09032026" veya "932026" girişlerini doğru kabul eder
+            if (text === "09032026" || text === "932026") {
                 quizOverlay.style.display = "none";
                 uiContainer.style.display = "flex";
                 forceResize();
@@ -335,7 +333,6 @@
             }
         }
 
-        // Tetikleyiciler doğrudan bağlandı
         quizSubmitBtn.onclick = handleVerification;
         quizAnswer.onkeypress = function(e) {
             if (e.key === 'Enter') handleVerification();
@@ -526,4 +523,8 @@
                 rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.35) + canvas.height * 0.1));
             }
 
-            if (timeline === 140) { ms
+            if (timeline === 140) { msg.classList.add('show'); }
+
+            if (timeline === 380 && !finalRocketLaunched) {
+                finalRocketLaunched = true;
+                rockets.push(new Rocket(canvas.width / 2, c
