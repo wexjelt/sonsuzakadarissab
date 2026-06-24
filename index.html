@@ -257,7 +257,6 @@
 
     <div id="quiz-overlay">
         <div class="quiz-box">
-            <!-- Soru ve ipucu güncellendi -->
             <div class="quiz-title" id="quiz-question">Beraber gitmek istediğimiz ülke?<br>(İpucu: Baş harfi sen)</div>
             <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
             <button class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
@@ -475,7 +474,7 @@
             }, 1500);
         }
 
-        // --- PARTİKÜL VE HAVAİ FİŞEK MOTORU (TAMAMLANDI) ---
+        // --- PARTİKÜL VE HAVAİ FİŞEK MOTORU ---
         class PixelParticle {
             constructor(x, y, vx, vy, type = 'spark') {
                 this.x = x; this.y = y;
@@ -509,4 +508,5 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-               
+                if (this.type === 'rose') {
+                    ctx.fillSty
