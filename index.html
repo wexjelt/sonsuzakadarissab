@@ -15,7 +15,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body, html {
-            background-color: #050505;
+            background-color: #110b11;
             overflow: hidden;
             width: 100%;
             height: 100dvh;
@@ -29,14 +29,16 @@
             width: 100%; height: 100%;
             z-index: 1;
             display: none;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
         
-        /* --- SORU EKRANI --- */
+        /* --- PIXEL ART SORU EKRANI --- */
         #quiz-overlay {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: #050505;
+            background: #110b11;
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -45,9 +47,10 @@
             padding: 20px;
         }
         .quiz-box {
-            background: #111;
-            border: 4px solid #ff007f;
-            box-shadow: 0 0 20px rgba(255,0,127,0.4), inset -6px -6px 0 #080808;
+            background: #211421;
+            border: 6px solid #ff007f;
+            outline: 6px solid #000;
+            box-shadow: inset -6px -6px 0 #0f070f, inset 6px 6px 0 #ff66b2;
             padding: 30px 20px;
             width: 100%;
             max-width: 360px;
@@ -55,43 +58,41 @@
         }
         .quiz-title {
             color: #fff;
-            font-size: 11px;
-            line-height: 1.8;
+            font-size: 10px;
+            line-height: 2;
             margin-bottom: 25px;
-            text-shadow: 0 0 5px #ff00ff;
+            text-shadow: 3px 3px 0 #000;
         }
         .quiz-input {
             width: 100%;
             background: #000;
-            border: 4px solid #333;
+            border: 4px solid #ff007f;
             color: #00ffcc;
-            padding: 12px;
+            padding: 14px;
             font-family: 'Press Start 2P', monospace;
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             outline: none;
             margin-bottom: 20px;
-            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.8);
+            box-shadow: inset 4px 4px 0 #110b11;
             -webkit-user-select: text;
             user-select: text;
         }
-        .quiz-input:focus {
-            border-color: #00ffcc;
-        }
         .quiz-btn {
-            background: #000;
-            color: #ff007f;
-            border: 4px solid #ff007f;
+            background: #ff007f;
+            color: #fff;
+            border: 4px solid #ff66b2;
+            outline: 4px solid #000;
             padding: 12px 20px;
             font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             cursor: pointer;
-            box-shadow: 4px 4px 0 #4a0025;
+            box-shadow: inset -4px -4px 0 #99004c;
             width: 100%;
         }
         .quiz-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 #4a0025;
+            box-shadow: inset 2px 2px 0 #99004c;
         }
         .error-msg {
             color: #ff3333;
@@ -99,6 +100,7 @@
             margin-top: 15px;
             min-height: 12px;
             opacity: 0;
+            text-shadow: 2px 2px 0 #000;
             transition: opacity 0.3s;
         }
 
@@ -116,17 +118,11 @@
         }
         .instruction {
             font-size: 9px;
-            color: #fff;
+            color: #ff66b2;
             text-align: center;
             line-height: 1.8;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px #ff007f, 0 0 10px #ff007f;
-            animation: neonPulse 1.5s infinite alternate;
+            text-shadow: 3px 3px 0 #000;
             pointer-events: none;
-        }
-        @keyframes neonPulse {
-            from { opacity: 0.6; text-shadow: 0 0 5px #ff007f; }
-            to { opacity: 1; text-shadow: 0 0 10px #ff007f, 0 0 20px #ff00ff; }
         }
         #stage {
             position: relative;
@@ -138,29 +134,30 @@
             position: absolute;
             bottom: 25%; left: 50%;
             transform: translateX(-50%);
-            width: 76px; height: 96px;
-            background: #141414;
-            border: 4px solid #282828;
-            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(255,0,127,0.15);
+            width: 72px; height: 92px;
+            background: #211421;
+            border: 4px solid #ff007f;
+            outline: 4px solid #000;
+            box-shadow: inset -6px -6px 0 #0f070f;
         }
         #firework-box::after {
             content: '';
             position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            background: repeating-linear-gradient(45deg, #5c0016, #5c0016 8px, #0f0f0f 8px, #0f0f0f 16px);
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            background: repeating-linear-gradient(45deg, #ff007f, #ff007f 10px, #000 10px, #000 20px);
         }
         #fuse {
             position: absolute;
-            top: -28px; left: 50%;
-            width: 8px; height: 28px;
-            background: #333;
+            top: -24px; left: 50%;
+            width: 8px; height: 24px;
+            background: #444;
             transform: translateX(-50%);
         }
         #fuse::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #555 50%, transparent 50%);
+            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
             background-size: 100% 8px;
         }
         #fuse.burning::before {
@@ -175,39 +172,38 @@
             position: absolute;
             bottom: 8%; left: 50%;
             transform: translateX(-50%);
-            width: 48px; height: 72px;
-            background: #1c1c1c;
-            border: 4px solid #3a3a3a;
-            box-shadow: inset -6px -6px 0 #0a0a0a;
+            width: 48px; height: 68px;
+            background: #ff007f;
+            border: 4px solid #ff66b2;
+            outline: 4px solid #000;
+            box-shadow: inset -4px -4px 0 #99004c;
             z-index: 100;
         }
         #lighter-top {
             position: absolute;
-            top: -16px; left: 5px;
-            width: 30px; height: 16px;
-            background: #555;
-            border: 4px solid #777;
+            top: -12px; left: 6px;
+            width: 28px; height: 12px;
+            background: #cccccc;
+            border: 4px solid #000;
             border-bottom: none;
         }
         #flame {
             position: absolute;
-            top: -24px; left: 9px;
-            width: 12px; height: 24px;
+            top: -20px; left: 10px;
+            width: 12px; height: 16px;
             background: #ff3300;
-            border: 2px solid #ffcc00;
-            box-shadow: 0 0 10px #ff3300;
+            outline: 2px solid #ffcc00;
             opacity: 0;
             transform: scale(0);
-            transition: transform 0.2s;
         }
         #lighter.ignited #flame {
             opacity: 1;
             transform: scale(1);
-            animation: pixelFlicker 0.1s infinite alternate;
+            animation: pixelFlicker 0.15s infinite steps(2);
         }
         @keyframes pixelFlicker {
-            0% { transform: scale(1) translate(1px, 0); background: #ff3300; }
-            100% { transform: scale(1.1) translate(-1px, -1px); background: #ffcc00; }
+            0% { transform: scale(1) translate(2px, 0); background: #ff3300; }
+            100% { transform: scale(1.1) translate(-2px, -2px); background: #ffcc00; }
         }
         
         /* --- YAZI OVERLAY --- */
@@ -225,26 +221,28 @@
             font-size: 3.5rem;
             color: #ffffff;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6), 0 0 30px rgba(255, 0, 98, 0.4);
-            transition: opacity 2s ease, transform 2s ease;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6);
+            transition: opacity 2.5s ease, transform 2.5s ease;
             transform: translate(-50%, -50%) scale(0.9);
             position: absolute;
             left: 50%; width: 100%;
         }
         .love-message.show {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: translate(-50%, -50%) scale(1.02);
         }
         #replay-btn {
             position: absolute;
             bottom: 8%; left: 50%;
             transform: translateX(-50%) scale(0);
+            font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             padding: 12px 20px;
-            background: #000;
-            color: #00ffcc;
-            border: 4px solid #00ffcc;
-            box-shadow: 4px 4px 0 #005544;
+            background: #ff007f;
+            color: #fff;
+            border: 4px solid #ff66b2;
+            outline: 4px solid #000;
+            box-shadow: inset -4px -4px 0 #99004c;
             cursor: pointer;
             z-index: 105;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -301,6 +299,7 @@
         let showActive = false;
         let finalRocketLaunched = false;
 
+        // Pixel Art Harf Matrisleri
         const textGrid = {
             '#': [[0,2],[1,2],[2,0],[2,1],[2,2],[2,3],[2,4],[3,2],[4,0],[4,1],[4,2],[4,3],[4,4],[5,2],[6,2]],
             'İ': [[0,2],[2,2],[3,2],[4,2],[5,2],[6,2]],
@@ -324,16 +323,10 @@
 
         function checkAnswer(e) {
             if(e) e.preventDefault();
-            
-            // KLAVYEYİ KAPAT (Donmayı önleyen kritik hamle)
-            if (document.activeElement) {
-                document.activeElement.blur();
-            }
+            if (document.activeElement) { document.activeElement.blur(); }
 
             const girdi = temizle(quizAnswer.value);
-            
             if(girdi === "isvicre" || girdi === "isviçre") {
-                // Klavyenin kapanma animasyonu için tarayıcıya 100ms süre ver
                 setTimeout(() => {
                     quizOverlay.style.display = 'none'; 
                     uiContainer.style.display = 'flex';
@@ -351,6 +344,7 @@
         quizSubmitBtn.addEventListener('click', checkAnswer);
         quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
 
+        // --- MOBİL VE MOUSE SÜRÜKLEME KONTROLLERİ ---
         let startX = 0, startY = 0;
 
         function onTouchStart(e) {
@@ -409,8 +403,9 @@
             }, 1500);
         }
 
-        class GlowingParticle {
-            constructor(x, y, vx, vy, color, size, fade, gravity = 0.05, drag = 0.96) {
+        // --- MINECRAFT STİL KARE PARÇACIK MOTORU ---
+        class MinecraftParticle {
+            constructor(x, y, vx, vy, color, size, fade, gravity = 0.06, drag = 0.95) {
                 this.x = x; this.y = y;
                 this.vx = vx; this.vy = vy;
                 this.color = color;
@@ -429,12 +424,9 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-                ctx.shadowBlur = this.size * 2;
-                ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
-                ctx.fill();
+                // Yuvarlak (arc) yerine keskin Minecraft karesi (fillRect)
+                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
                 ctx.restore();
             }
         }
@@ -443,7 +435,7 @@
             constructor(startX, startY, targetY, isFinal = false) {
                 this.x = startX; this.y = startY; this.targetY = targetY;
                 this.isFinal = isFinal;
-                this.vy = isFinal ? -6 : -Math.random() * 3 - 6;
+                this.vy = isFinal ? -5 : -Math.random() * 3 - 6;
                 this.alive = true;
             }
             update() {
@@ -456,43 +448,43 @@
                         explodeStandard(this.x, this.y);
                     }
                 }
+                // Roket arkasındaki Minecraft duman pikselleri
                 if (Math.random() < 0.4) {
-                    particles.push(new GlowingParticle(this.x, this.y, Math.random() * 1 - 0.5, 0.5, '#ffaa00', 3, 0.04, 0.01, 0.98));
+                    particles.push(new MinecraftParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#555555', 4, 0.05, 0.01, 0.98));
                 }
             }
             draw() {
                 ctx.save();
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#ffffff';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 1, this.y, 3, 10);
+                ctx.fillRect(this.x - 2, this.y, 4, 12); // Pikselli roket gövdesi
                 ctx.restore();
             }
         }
 
         function explodeStandard(cx, cy) {
-            const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#b026ff'];
+            const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#ffffff'];
             const chosenColor = colors[Math.floor(Math.random() * colors.length)];
             const isHeart = Math.random() < 0.5;
 
             if (isHeart) {
-                for (let angle = 0; angle < Math.PI * 2; angle += 0.06) {
-                    const r = 5.5;
-                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.1;
-                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.1;
-                    particles.push(new GlowingParticle(cx, cy, vx, vy, chosenColor, 5, Math.random() * 0.008 + 0.005, 0.03, 0.98));
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
+                    const r = 5;
+                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.11;
+                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.11;
+                    particles.push(new MinecraftParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.015 + 0.01, 0.04));
                 }
             } else {
-                for (let i = 0; i < 70; i++) {
+                for (let i = 0; i < 60; i++) {
                     const angle = Math.random() * Math.PI * 2;
                     const speed = Math.random() * 5 + 1;
-                    particles.push(new GlowingParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 4, Math.random() * 0.015 + 0.008));
+                    particles.push(new MinecraftParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01));
                 }
             }
         }
 
+        // HAFİF VE UZUN SÜRE HAVADA ASILI KALAN BÜYÜK FİNAL YAZISI
         function explodeFinalText(cx, cy) {
-            const pixelSize = 7; 
+            const pixelSize = Math.max(5, Math.min(8, window.innerWidth / 55)); 
             const charWidth = 6 * pixelSize; 
             const spacing = 3 * pixelSize; 
             const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
@@ -504,21 +496,22 @@
                     matrix.forEach(([row, col]) => {
                         const px = startX + (col * pixelSize);
                         const py = cy + (row * pixelSize) - (3.5 * pixelSize);
-                        
                         const color = char === '#' ? '#00ffcc' : '#ff007f';
-                        for(let k=0; k<2; k++){
-                            particles.push(new GlowingParticle(
-                                px + (Math.random()*4-2), py + (Math.random()*4-2), 
-                                Math.random() * 0.4 - 0.2, Math.random() * 0.4 - 0.2, 
-                                color, 7, Math.random() * 0.003 + 0.002, 0.005, 0.99
-                            ));
-                        }
+                        
+                        // Yazının havada donmuş gibi kalması için fade hızı aşırı düşürüldü (0.00015) 
+                        // Yerçekimi ivmesi neredeyse sıfıra çekildi (0.0005)
+                        particles.push(new MinecraftParticle(
+                            px, py, 
+                            Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, 
+                            color, pixelSize, 0.00015, 0.0005, 0.99
+                        ));
                     });
                 }
                 startX += charWidth + spacing;
             });
 
-            for (let i = 0; i < 150; i++) {
+            // Yazının dış patlama çevre pikselleri
+            for (let i = 0; i < 120; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 9 + 3;
-                particles.push(new GlowingPart
+                const speed = Math.random() * 8 + 2;
+                particles.push(new MinecraftParticle(cx, cy, Mat
