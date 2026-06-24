@@ -32,7 +32,7 @@
             image-rendering: pixelated;
         }
         
-        /* --- SORU EKRANI --- */
+        /* --- SORU EKRANI MODALI --- */
         #quiz-overlay {
             position: absolute;
             top: 0; left: 0;
@@ -45,7 +45,7 @@
             align-items: center;
             padding: 20px;
             transition: opacity 0.8s ease;
-            touch-action: auto; /* Klavyenin açılması ve form tıklamaları için mobilde serbest bırakıldı */
+            touch-action: auto;
         }
         .quiz-box {
             background: #111;
@@ -76,7 +76,7 @@
             outline: none;
             margin-bottom: 20px;
             box-shadow: inset 4px 4px 0 rgba(0,0,0,0.8);
-            -webkit-user-select: text; /* Mobilde yazı yazılabilmesi için şarttır */
+            -webkit-user-select: text;
             user-select: text;
         }
         .quiz-input:focus {
@@ -257,7 +257,7 @@
 
     <div id="quiz-overlay">
         <div class="quiz-box">
-            <div class="quiz-title" id="quiz-question">Bizim için en özel tarih hangisi?<br>(Örn: 14.02)</div>
+            <div class="quiz-title" id="quiz-question">Bizim için en özel tarih hangisi?<br>(Örn:Baş harfi sen)</div>
             <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
             <button class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
             <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
@@ -275,16 +275,13 @@
     </div>
 
     <div id="text-overlay">
-        <div class="love-message" id="msg">Seni sevdiğimi hiç unutma...</div>
+        <div class="love-message" id="msg">Seni göğe baktığında gördüğün ay ve yıldızlar kadar seviyorum...</div>
     </div>
 
     <button id="replay-btn">TEKRAR OYNAT</button>
 
     <script>
-        // --- ⚠️ BURAYI DÜZENLE ⚠️ ---
-        // Sitenin kabul edeceği doğru cevabı buraya yaz (İster tarih, ister isim). 
-        // Akıllı motor sayesinde büyük/küçük harf veya boşluk bırakılması önemli değildir.
-        const DOGRU_CEVAP = "14.02"; 
+        const DOGRU_CEVAP = "İsviçre"; 
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -366,12 +363,11 @@
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        // --- AKILLI HARF VE TÜRKÇE KARAKTER TEMİZLEME MOTORU ---
         function temizle(metin) {
             return metin
-                .replace(/\s+/g, '') // Tüm boşlukları siler
-                .toLowerCase() // Küçük harfe çevirir
-                .replace(/ı/g, 'i') // Türkçe karakterleri evrenselleştirir
+                .replace(/\s+/g, '')
+                .toLowerCase()
+                .replace(/ı/g, 'i')
                 .replace(/ğ/g, 'g')
                 .replace(/ü/g, 'u')
                 .replace(/ş/g, 's')
@@ -403,11 +399,9 @@
         quizSubmitBtn.addEventListener('click', checkAnswer);
         quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(); });
 
-        // --- SÜRÜKLEME VE DOKUNMA OLAYLARI ---
         let startX = 0, startY = 0;
 
         function onTouchStart(e) {
-            // Sadece çakmak alanındayken ana sayfa kaymasını engelle
             if (e.target === lighter || lighter.contains(e.target)) {
                 e.preventDefault();
             }
@@ -480,7 +474,6 @@
             }, 1500);
         }
 
-        // --- MINECRAFT GÜL VE PARÇACIK MOTORU ---
         class PixelParticle {
             constructor(x, y, vx, vy, type = 'spark') {
                 this.x = x; this.y = y;
@@ -500,4 +493,21 @@
                     this.drag = 0.95;
                 } else {
                     this.size = 5;
-                 
+                    this.fade = Math.random() * 0.012 + 0.008;
+                    this.gravity = 0.07;
+                    this.drag = 0.96;
+                }
+            }
+            update() {
+                this.vx *= this.drag; this.vy *= this.drag;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
+                this.alpha -= this.fade;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                
+                if (this.type === 'rose') {
+                    ctx.fillStyle = '#e60036';
+                    ctx.fillRect(Math.floor(this.x), Math.floor(
