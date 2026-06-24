@@ -276,6 +276,7 @@
     <button id="replay-btn">TEKRAR OYNAT</button>
 
     <script>
+        // DOM Elemanları (Hatalı atamalar ve eksik id aramaları tamamen temizlendi)
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const lighter = document.getElementById('lighter');
@@ -314,32 +315,27 @@
         window.addEventListener('resize', forceResize);
         forceResize();
 
-        // TAMAMEN SIFIRDAN YAZILMIŞ, ÇÖKMEYEN GARANTİLİ KONTROL FONKSİYONU
+        // KÖKTEN ARINDIRILMIŞ KONTROL FONKSİYONU
         function handleVerification() {
-            // Mobil cihazlarda klavyeyi kapat
             quizAnswer.blur();
 
-            // Harfleri temizle
             let text = quizAnswer.value.trim().toLowerCase()
                 .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
                 .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
                 .replace(/[^a-z0-9]/g, '');
 
-            // Tüm doğru olasılıkları yakala
             if (text === "9mart" || text === "09mart" || text === "9" || text === "0903" || text === "93") {
-                // Tarayıcıyı kitleyen tüm CSS yüklerini kaldır, direkt görünür yap
                 quizOverlay.style.display = "none";
                 uiContainer.style.display = "flex";
                 forceResize();
             } else {
-                // Yanlış cevap durumunda hata mesajı tetikle
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
                 setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
             }
         }
 
-        // Tıklama ve Enter Tuşu Dinleyicileri
+        // Tetikleyiciler doğrudan bağlandı
         quizSubmitBtn.onclick = handleVerification;
         quizAnswer.onkeypress = function(e) {
             if (e.key === 'Enter') handleVerification();
@@ -527,4 +523,7 @@
             timeline++;
 
             if (timeline % 50 === 1 && timeline < 320) {
- 
+                rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.35) + canvas.height * 0.1));
+            }
+
+            if (timeline === 140) { ms
