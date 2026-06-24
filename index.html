@@ -45,5 +45,459 @@
             align-items: center;
             padding: 20px;
             transition: opacity 0.8s ease;
-            touch-action: auto; /* Klavyenin açılması ve form tıklamaları için mobilde ser
+            touch-action: auto; /* Klavyenin açılması ve form tıklamaları için mobilde serbest bırakıldı */
+        }
+        .quiz-box {
+            background: #111;
+            border: 4px solid #aa00ff;
+            box-shadow: 0 0 20px rgba(170,0,255,0.4), inset -6px -6px 0 #080808;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            image-rendering: pixelated;
+        }
+        .quiz-title {
+            color: #fff;
+            font-size: 11px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        .quiz-input {
+            width: 100%;
+            background: #000;
+            border: 4px solid #333;
+            color: #00ffcc;
+            padding: 12px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.8);
+            -webkit-user-select: text; /* Mobilde yazı yazılabilmesi için şarttır */
+            user-select: text;
+        }
+        .quiz-input:focus {
+            border-color: #00ffcc;
+        }
+        .quiz-btn {
+            background: #000;
+            color: #aa00ff;
+            border: 4px solid #aa00ff;
+            padding: 12px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #4a0072;
+            width: 100%;
+        }
+        .quiz-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #4a0072;
+        }
+        .error-msg {
+            color: #ff3333;
+            font-size: 8px;
+            margin-top: 15px;
+            min-height: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- OYUN ALANI --- */
+        #ui-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        .instruction {
+            font-size: 9px;
+            color: #fff;
+            text-align: center;
+            line-height: 1.8;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #aa00ff, 0 0 10px #aa00ff;
+            animation: neonPulse 1.5s infinite alternate;
+            pointer-events: none;
+        }
+        @keyframes neonPulse {
+            from { opacity: 0.6; text-shadow: 0 0 5px #aa00ff; }
+            to { opacity: 1; text-shadow: 0 0 10px #aa00ff, 0 0 20px #ff00ff; }
+        }
+        #stage {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+        }
+        #firework-box {
+            position: absolute;
+            bottom: 25%; left: 50%;
+            transform: translateX(-50%);
+            width: 76px; height: 96px;
+            background: #141414;
+            border: 4px solid #282828;
+            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(170,0,255,0.15);
+            image-rendering: pixelated;
+        }
+        #firework-box::after {
+            content: '';
+            position: absolute;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            background: repeating-linear-gradient(45deg, #5c0016, #5c0016 8px, #0f0f0f 8px, #0f0f0f 16px);
+        }
+        #fuse {
+            position: absolute;
+            top: -28px; left: 50%;
+            width: 8px; height: 28px;
+            background: #333;
+            transform: translateX(-50%);
+            image-rendering: pixelated;
+        }
+        #fuse::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(to bottom, #555 50%, transparent 50%);
+            background-size: 100% 8px;
+        }
+        #fuse.burning::before {
+            background-image: linear-gradient(to bottom, #ff3300 50%, #ffcc00 50%);
+            animation: fuseBurn 1.5s linear forwards;
+        }
+        @keyframes fuseBurn {
+            0% { height: 100%; }
+            100% { height: 0%; }
+        }
+        #lighter {
+            position: absolute;
+            bottom: 8%; left: 50%;
+            transform: translateX(-50%);
+            width: 48px; height: 72px;
+            background: #1c1c1c;
+            border: 4px solid #3a3a3a;
+            box-shadow: inset -6px -6px 0 #0a0a0a;
+            z-index: 100;
+        }
+        #lighter-top {
+            position: absolute;
+            top: -16px; left: 5px;
+            width: 30px; height: 16px;
+            background: #555;
+            border: 4px solid #777;
+            border-bottom: none;
+        }
+        #flame {
+            position: absolute;
+            top: -24px; left: 9px;
+            width: 12px; height: 24px;
+            background: #ff3300;
+            border: 2px solid #ffcc00;
+            box-shadow: 0 0 10px #ff3300;
+            opacity: 0;
+            transform: scale(0);
+            transition: transform 0.2s;
+        }
+        #lighter.ignited #flame {
+            opacity: 1;
+            transform: scale(1);
+            animation: pixelFlicker 0.1s infinite alternate;
+        }
+        @keyframes pixelFlicker {
+            0% { transform: scale(1) translate(1px, 0); background: #ff3300; }
+            100% { transform: scale(1.1) translate(-1px, -1px); background: #ffcc00; }
+        }
+        #text-overlay {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            text-align: center;
+            width: 90%;
+            pointer-events: none;
+        }
+        .love-message {
+            font-family: 'Sacramento', cursive;
+            font-size: 3rem;
+            color: #fff;
+            opacity: 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 25px rgba(255,0,102,0.5);
+            transition: opacity 2s, transform 2s;
+        }
+        .love-message.show {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        #replay-btn {
+            position: absolute;
+            bottom: 8%; left: 50%;
+            transform: translateX(-50%) scale(0);
+            font-size: 10px;
+            padding: 12px 20px;
+            background: #000;
+            color: #00ffcc;
+            border: 4px solid #00ffcc;
+            box-shadow: 4px 4px 0 #005544;
+            cursor: pointer;
+            z-index: 105;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-overlay">
+        <div class="quiz-box">
+            <div class="quiz-title" id="quiz-question">Bizim için en özel tarih hangisi?<br>(Örn: 14.02)</div>
+            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
+            <button class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
+            <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-container">
+        <div class="instruction" id="info-text">Çakmağa Dokun ve Yak!<br>Sonra Sürükleyip Fitili Ateşle.</div>
+        <div id="stage">
+            <div id="firework-box"><div id="fuse"></div></div>
+            <div id="lighter"><div id="flame"></div><div id="lighter-top"></div></div>
+        </div>
+    </div>
+
+    <div id="text-overlay">
+        <div class="love-message" id="msg">Seni sevdiğimi hiç unutma...</div>
+    </div>
+
+    <button id="replay-btn">TEKRAR OYNAT</button>
+
+    <script>
+        // --- ⚠️ BURAYI DÜZENLE ⚠️ ---
+        // Sitenin kabul edeceği doğru cevabı buraya yaz (İster tarih, ister isim). 
+        // Akıllı motor sayesinde büyük/küçük harf veya boşluk bırakılması önemli değildir.
+        const DOGRU_CEVAP = "14.02"; 
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const lighter = document.getElementById('lighter');
+        const fuse = document.getElementById('fuse');
+        const uiContainer = document.getElementById('ui-container');
+        const infoText = document.getElementById('info-text');
+        const msg = document.getElementById('msg');
+        const replayBtn = document.getElementById('replay-btn');
+        const quizOverlay = document.getElementById('quiz-overlay');
+        const quizAnswer = document.getElementById('quiz-answer');
+        const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+        const quizError = document.getElementById('quiz-error');
+
+        let isIgnited = false;
+        let isDragging = false;
+        let particles = [];
+        let rockets = [];
+        let animationFrame;
+        let timeline = 0;
+        let showActive = false;
+
+        // --- RETRO SES MOTORU ---
+        const AudioFX = {
+            ctx: null,
+            init() { 
+                if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playClick() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
+            },
+            playBurn() {
+                try {
+                    this.init(); const bufferSize = this.ctx.sampleRate * 1.5, buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate), data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                    const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1000;
+                    const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.5);
+                    noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination); noise.start();
+                } catch(e) {}
+            },
+            playLaunch() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(45, this.ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(280, this.ctx.currentTime + 1.2);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 1.2);
+                } catch(e) {}
+            },
+            playExplode() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.6);
+                    gain.gain.setValueAtTime(0.5, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.6);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.6);
+                    setTimeout(() => this.playCrack(), 50);
+                    setTimeout(() => this.playCrack(), 150);
+                } catch(e) {}
+            },
+            playCrack() {
+                try {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'square'; osc.frequency.setValueAtTime(Math.random() * 300 + 200, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.04, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
+            }
+        };
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        // --- AKILLI HARF VE TÜRKÇE KARAKTER TEMİZLEME MOTORU ---
+        function temizle(metin) {
+            return metin
+                .replace(/\s+/g, '') // Tüm boşlukları siler
+                .toLowerCase() // Küçük harfe çevirir
+                .replace(/ı/g, 'i') // Türkçe karakterleri evrenselleştirir
+                .replace(/ğ/g, 'g')
+                .replace(/ü/g, 'u')
+                .replace(/ş/g, 's')
+                .replace(/ö/g, 'o')
+                .replace(/ç/g, 'c');
+        }
+
+        function checkAnswer() {
+            const temizKullaniciCevabi = temizle(quizAnswer.value);
+            const temizDogruCevap = temizle(DOGRU_CEVAP);
+
+            if(temizKullaniciCevabi === temizDogruCevap && temizKullaniciCevabi !== "") {
+                AudioFX.init();
+                AudioFX.playClick();
+                
+                quizOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    quizOverlay.style.display = 'none';
+                    uiContainer.style.display = 'flex';
+                    setTimeout(() => uiContainer.style.opacity = '1', 50);
+                }, 800);
+            } else {
+                quizError.style.opacity = '1';
+                quizAnswer.value = "";
+                setTimeout(() => { quizError.style.opacity = '0'; }, 3000);
+            }
+        }
+        
+        quizSubmitBtn.addEventListener('click', checkAnswer);
+        quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(); });
+
+        // --- SÜRÜKLEME VE DOKUNMA OLAYLARI ---
+        let startX = 0, startY = 0;
+
+        function onTouchStart(e) {
+            // Sadece çakmak alanındayken ana sayfa kaymasını engelle
+            if (e.target === lighter || lighter.contains(e.target)) {
+                e.preventDefault();
+            }
+            AudioFX.playClick();
             
+            if (!isIgnited) {
+                isIgnited = true;
+                lighter.classList.add('ignited');
+                infoText.innerHTML = "Harika! Şimdi Sürükle<br>ve Üstteki Fitili Yak.";
+                const rect = lighter.getBoundingClientRect();
+                lighter.style.transform = 'none';
+                lighter.style.left = rect.left + 'px';
+                lighter.style.top = rect.top + 'px';
+            }
+            
+            isDragging = true;
+            const touch = e.touches ? e.touches[0] : e;
+            startX = touch.clientX - lighter.offsetLeft;
+            startY = touch.clientY - lighter.offsetTop;
+        }
+
+        function onTouchMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let currentX = touch.clientX - startX;
+            let currentY = touch.clientY - startY;
+            
+            if(currentX < 0) currentX = 0;
+            if(currentX > window.innerWidth - 48) currentX = window.innerWidth - 48;
+
+            lighter.style.left = currentX + 'px';
+            lighter.style.top = currentY + 'px';
+
+            const fRect = fuse.getBoundingClientRect();
+            const flameRect = document.getElementById('flame').getBoundingClientRect();
+
+            if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
+                flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
+                triggerSequence();
+            }
+        }
+
+        function onTouchEnd() { isDragging = false; }
+
+        lighter.addEventListener('touchstart', onTouchStart, { passive: false });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+
+        lighter.addEventListener('mousedown', onTouchStart);
+        window.addEventListener('mousemove', onTouchMove);
+        window.addEventListener('mouseup', onTouchEnd);
+
+        function triggerSequence() {
+            isDragging = false;
+            lighter.style.display = 'none';
+            fuse.classList.add('burning');
+            infoText.style.opacity = '0';
+            AudioFX.playBurn();
+
+            setTimeout(() => {
+                uiContainer.style.transition = 'opacity 0.6s';
+                uiContainer.style.opacity = '0';
+                setTimeout(() => {
+                    uiContainer.style.display = 'none';
+                    showActive = true;
+                    startShow();
+                }, 600);
+            }, 1500);
+        }
+
+        // --- MINECRAFT GÜL VE PARÇACIK MOTORU ---
+        class PixelParticle {
+            constructor(x, y, vx, vy, type = 'spark') {
+                this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy;
+                this.type = type;
+                this.alpha = 1;
+                
+                if (type === 'rose') {
+                    this.size = 6;
+                    this.fade = Math.random() * 0.006 + 0.004;
+                    this.gravity = 0.04;
+                    this.drag = 0.98;
+                } else if (type === 'trail') {
+                    this.size = 4;
+                    this.fade = 0.03;
+                    this.gravity = 0.01;
+                    this.drag = 0.95;
+                } else {
+                    this.size = 5;
+                 
