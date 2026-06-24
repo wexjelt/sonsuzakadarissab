@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Her Şeyin Başladığı Gün...</title>
+    <title>Sonsuz Bir Hikaye...</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         * {
@@ -15,11 +15,12 @@
             -webkit-tap-highlight-color: transparent;
         }
         body, html {
-            background-color: #1a0f1a;
+            background-color: #050505;
             overflow: hidden;
             width: 100%;
-            height: 100%;
+            height: 100dvh;
             position: relative;
+            overscroll-behavior: none;
             font-family: 'Press Start 2P', monospace;
         }
         canvas {
@@ -27,16 +28,16 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            image-rendering: pixelated;
+            display: none;
         }
         
-        /* --- SORU EKRANI KATMANI --- */
+        /* --- SORU EKRANI --- */
         #quiz-overlay {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: #1a0f1a;
-            z-index: 999;
+            background: #050505;
+            z-index: 200;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -44,11 +45,10 @@
             padding: 20px;
         }
         .quiz-box {
-            background: #2b1625;
-            border: 6px solid #ff66aa;
-            outline: 6px solid #000;
-            box-shadow: inset -6px -6px 0 #150a12, inset 6px 6px 0 #ff99cc;
-            padding: 35px 20px;
+            background: #111;
+            border: 4px solid #ff007f;
+            box-shadow: 0 0 20px rgba(255,0,127,0.4), inset -6px -6px 0 #080808;
+            padding: 30px 20px;
             width: 100%;
             max-width: 360px;
             text-align: center;
@@ -57,46 +57,52 @@
             color: #fff;
             font-size: 11px;
             line-height: 1.8;
-            margin-bottom: 30px;
-            text-shadow: 3px 3px 0 #000;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px #ff00ff;
         }
         .quiz-input {
             width: 100%;
             background: #000;
-            border: 4px solid #ff55aa;
-            color: #ff99cc;
-            padding: 14px;
+            border: 4px solid #333;
+            color: #00ffcc;
+            padding: 12px;
             font-family: 'Press Start 2P', monospace;
             font-size: 12px;
             text-align: center;
             outline: none;
-            margin-bottom: 25px;
-            box-shadow: inset 4px 4px 0 #150a12;
+            margin-bottom: 20px;
+            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.8);
             -webkit-user-select: text;
             user-select: text;
         }
+        .quiz-input:focus {
+            border-color: #00ffcc;
+        }
         .quiz-btn {
-            background: #ff55aa;
-            color: #fff;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
-            padding: 15px 20px;
+            background: #000;
+            color: #ff007f;
+            border: 4px solid #ff007f;
+            padding: 12px 20px;
             font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
+            font-size: 10px;
             cursor: pointer;
-            box-shadow: inset -4px -4px 0 #b32d6b;
+            box-shadow: 4px 4px 0 #4a0025;
             width: 100%;
-            display: block;
+        }
+        .quiz-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #4a0025;
         }
         .error-msg {
-            color: #ff4444;
-            font-size: 9px;
-            margin-top: 20px;
-            min-height: 15px;
-            text-shadow: 2px 2px 0 #000;
+            color: #ff3333;
+            font-size: 8px;
+            margin-top: 15px;
+            min-height: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        /* --- OYUN ALANI KATMANI --- */
+        /* --- OYUN ALANI --- */
         #ui-container {
             position: absolute;
             top: 0; left: 0;
@@ -106,52 +112,59 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: calc(40px + env(safe-area-inset-top)) 20px calc(50px + env(safe-area-inset-bottom)) 20px;
-            pointer-events: none;
+            padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
         }
         .instruction {
             font-size: 9px;
-            color: #ff99cc;
+            color: #fff;
             text-align: center;
             line-height: 1.8;
-            text-shadow: 2px 2px 0 #000;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #ff007f, 0 0 10px #ff007f;
+            animation: neonPulse 1.5s infinite alternate;
+            pointer-events: none;
+        }
+        @keyframes neonPulse {
+            from { opacity: 0.6; text-shadow: 0 0 5px #ff007f; }
+            to { opacity: 1; text-shadow: 0 0 10px #ff007f, 0 0 20px #ff00ff; }
         }
         #stage {
             position: relative;
             width: 100%;
             flex-grow: 1;
+            touch-action: none;
         }
         #firework-box {
             position: absolute;
-            bottom: 30%; left: 50%;
+            bottom: 25%; left: 50%;
             transform: translateX(-50%);
-            width: 64px; height: 80px;
-            background: #2b1625;
-            border: 4px solid #ff55aa;
-            outline: 4px solid #000;
+            width: 76px; height: 96px;
+            background: #141414;
+            border: 4px solid #282828;
+            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(255,0,127,0.15);
         }
         #firework-box::after {
             content: '';
             position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
-            background: repeating-linear-gradient(45deg, #ff3388, #ff3388 10px, #150a12 10px, #150a12 20px);
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            background: repeating-linear-gradient(45deg, #5c0016, #5c0016 8px, #0f0f0f 8px, #0f0f0f 16px);
         }
         #fuse {
             position: absolute;
-            top: -24px; left: 50%;
-            width: 8px; height: 24px;
-            background: #444;
+            top: -28px; left: 50%;
+            width: 8px; height: 28px;
+            background: #333;
             transform: translateX(-50%);
         }
         #fuse::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #888 50%, transparent 50%);
+            background-image: linear-gradient(to bottom, #555 50%, transparent 50%);
             background-size: 100% 8px;
         }
         #fuse.burning::before {
-            background-image: linear-gradient(to bottom, #ff3388 50%, #ffcc00 50%);
+            background-image: linear-gradient(to bottom, #ff3300 50%, #ffcc00 50%);
             animation: fuseBurn 1.5s linear forwards;
         }
         @keyframes fuseBurn {
@@ -160,45 +173,47 @@
         }
         #lighter {
             position: absolute;
-            bottom: 10%; left: 50%;
+            bottom: 8%; left: 50%;
             transform: translateX(-50%);
-            width: 44px; height: 64px;
-            background: #ff55aa;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
+            width: 48px; height: 72px;
+            background: #1c1c1c;
+            border: 4px solid #3a3a3a;
+            box-shadow: inset -6px -6px 0 #0a0a0a;
             z-index: 100;
-            pointer-events: auto;
-            touch-action: none;
         }
         #lighter-top {
             position: absolute;
-            top: -12px; left: 6px;
-            width: 24px; height: 12px;
-            background: #dddddd;
-            border: 4px solid #000;
+            top: -16px; left: 5px;
+            width: 30px; height: 16px;
+            background: #555;
+            border: 4px solid #777;
             border-bottom: none;
         }
         #flame {
             position: absolute;
-            top: -20px; left: 10px;
-            width: 12px; height: 16px;
-            background: #ff3388;
-            outline: 2px solid #ff99cc;
-            display: none;
+            top: -24px; left: 9px;
+            width: 12px; height: 24px;
+            background: #ff3300;
+            border: 2px solid #ffcc00;
+            box-shadow: 0 0 10px #ff3300;
+            opacity: 0;
+            transform: scale(0);
+            transition: transform 0.2s;
         }
         #lighter.ignited #flame {
-            display: block;
-            animation: pixelFlicker 0.15s infinite steps(2);
+            opacity: 1;
+            transform: scale(1);
+            animation: pixelFlicker 0.1s infinite alternate;
         }
         @keyframes pixelFlicker {
-            0% { transform: translate(1px, 0); background: #ff3388; }
-            100% { transform: translate(-1px, -1px); background: #ff77aa; }
+            0% { transform: scale(1) translate(1px, 0); background: #ff3300; }
+            100% { transform: scale(1.1) translate(-1px, -1px); background: #ffcc00; }
         }
         
-        /* --- AŞK MESAJI --- */
+        /* --- YAZI OVERLAY --- */
         #text-overlay {
             position: absolute;
-            top: 42%; left: 50%;
+            top: 40%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 5;
             text-align: center;
@@ -207,31 +222,32 @@
         }
         .love-message {
             font-family: 'Great Vibes', cursive;
-            font-size: 3.2rem;
+            font-size: 3.5rem;
             color: #ffffff;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255, 51, 136, 0.7);
-            transition: opacity 2.5s ease;
-            display: none;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255, 0, 98, 0.6), 0 0 30px rgba(255, 0, 98, 0.4);
+            transition: opacity 2s ease, transform 2s ease;
+            transform: translate(-50%, -50%) scale(0.9);
+            position: absolute;
+            left: 50%; width: 100%;
         }
         .love-message.show {
-            display: block;
             opacity: 1;
+            transform: translate(-50%, -50%) scale(1.05);
         }
         #replay-btn {
             position: absolute;
-            bottom: 10%; left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Press Start 2P', monospace;
+            bottom: 8%; left: 50%;
+            transform: translateX(-50%) scale(0);
             font-size: 10px;
-            padding: 15px 20px;
-            background: #ff55aa;
-            color: #fff;
-            border: 4px solid #ff99cc;
-            outline: 4px solid #000;
+            padding: 12px 20px;
+            background: #000;
+            color: #00ffcc;
+            border: 4px solid #00ffcc;
+            box-shadow: 4px 4px 0 #005544;
             cursor: pointer;
             z-index: 105;
-            display: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
     </style>
 </head>
@@ -239,10 +255,10 @@
 
     <div id="quiz-overlay">
         <div class="quiz-box">
-            <div class="quiz-title">Her şeyin başladığı gün?</div>
-            <input type="text" class="quiz-input" id="quiz-answer" placeholder="09.03.2026" autocomplete="off">
+            <div class="quiz-title" id="quiz-question">Beraber gitmek istediğimiz ülke?<br>(İpucu: Baş harfi sen)</div>
+            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
             <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
-            <div class="error-msg" id="quiz-error"></div>
+            <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
         </div>
     </div>
 
@@ -294,104 +310,94 @@
         };
         const wordSequence = ["#", "İ", "S", "S", "A", "B"];
 
-        function forceResize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        function resize() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
         }
-        window.addEventListener('resize', forceResize);
-        forceResize();
 
-        // MOBİLİN EN GÜVENLİ DOĞRULAMA FONKSİYONU
-        function checkCode() {
-            quizAnswer.blur();
+        function temizle(metin) {
+            if (!metin) return "";
+            return metin.trim().toLowerCase()
+                .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+                .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+        }
+
+        function checkAnswer(e) {
+            if(e) e.preventDefault();
             
-            // Tüm noktalama işaretlerini silip sadece rakamları alıyoruz
-            let inputVal = quizAnswer.value.trim().replace(/[^0-9]/g, '');
+            // KLAVYEYİ KAPAT (Donmayı önleyen kritik hamle)
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
 
-            // 09.03.2026 -> 09032026 veya kısa yazımı 932026
-            if (inputVal === "09032026" || inputVal === "932026") {
-                // Soru ekranını tamamen yok et (Tarayıcıyı hafifletir)
-                quizOverlay.remove();
-                
-                // Oyun alanını aç
-                uiContainer.style.display = "flex";
-                forceResize();
+            const girdi = temizle(quizAnswer.value);
+            
+            if(girdi === "isvicre" || girdi === "isviçre") {
+                // Klavyenin kapanma animasyonu için tarayıcıya 100ms süre ver
+                setTimeout(() => {
+                    quizOverlay.style.display = 'none'; 
+                    uiContainer.style.display = 'flex';
+                    canvas.style.display = 'block';
+                    window.addEventListener('resize', resize); 
+                    resize();
+                }, 100);
             } else {
-                quizError.innerHTML = "Yanlış cevap sevgilim... ❤️";
+                quizError.style.opacity = '1';
                 quizAnswer.value = "";
-                setTimeout(() => { quizError.innerHTML = ""; }, 2500);
+                setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
             }
         }
+        
+        quizSubmitBtn.addEventListener('click', checkAnswer);
+        quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
 
-        // Tıklama engellerini aşmak için tüm dokunmatik tetikleyicileri bağlıyoruz
-        quizSubmitBtn.onclick = checkCode;
-        quizSubmitBtn.ontouchend = function(e) {
-            e.preventDefault();
-            checkCode();
-        };
-        quizAnswer.onkeypress = function(e) {
-            if (e.key === 'Enter') checkCode();
-        };
-
-        // --- MOBİL UYUMLU SÜRÜKLE BIRAK SİSTEMİ ---
         let startX = 0, startY = 0;
 
-        function startDrag(e) {
-            e.preventDefault();
-            let pointer = e.touches ? e.touches[0] : e;
-            
+        function onTouchStart(e) {
+            if (e.target === lighter || lighter.contains(e.target)) { e.preventDefault(); }
             if (!isIgnited) {
                 isIgnited = true;
                 lighter.classList.add('ignited');
                 infoText.innerHTML = "Harika! Şimdi Sürükle<br>ve Üstteki Fitili Yak.";
-                
-                let rect = lighter.getBoundingClientRect();
+                const rect = lighter.getBoundingClientRect();
                 lighter.style.transform = 'none';
                 lighter.style.left = rect.left + 'px';
                 lighter.style.top = rect.top + 'px';
             }
             isDragging = true;
-            startX = pointer.clientX - lighter.offsetLeft;
-            startY = pointer.clientY - lighter.offsetTop;
+            const touch = e.touches ? e.touches[0] : e;
+            startX = touch.clientX - lighter.offsetLeft;
+            startY = touch.clientY - lighter.offsetTop;
         }
 
-        function moveDrag(e) {
+        function onTouchMove(e) {
             if (!isDragging) return;
-            let pointer = e.touches ? e.touches[0] : e;
-            
-            let currentX = pointer.clientX - startX;
-            let currentY = pointer.clientY - startY;
-            
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            let currentX = touch.clientX - startX;
+            let currentY = touch.clientY - startY;
             if(currentX < 0) currentX = 0;
-            if(currentX > window.innerWidth - 44) currentX = window.innerWidth - 44;
-            
+            if(currentX > window.innerWidth - 48) currentX = window.innerWidth - 48;
             lighter.style.left = currentX + 'px';
             lighter.style.top = currentY + 'px';
 
-            // Çakmak ucu fitile değdi mi?
-            let fRect = fuse.getBoundingClientRect();
-            let flameRect = document.getElementById('flame').getBoundingClientRect();
-            
+            const fRect = fuse.getBoundingClientRect();
+            const flameRect = document.getElementById('flame').getBoundingClientRect();
             if (flameRect.left < fRect.right && flameRect.right > fRect.left &&
                 flameRect.top < fRect.bottom && flameRect.bottom > fRect.top) {
-                startFireworks();
+                triggerSequence();
             }
         }
 
-        function stopDrag() {
-            isDragging = false;
-        }
+        function onTouchEnd() { isDragging = false; }
+        lighter.addEventListener('touchstart', onTouchStart, { passive: false });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+        lighter.addEventListener('mousedown', onTouchStart);
+        window.addEventListener('mousemove', onTouchMove);
+        window.addEventListener('mouseup', onTouchEnd);
 
-        // Hem mouse hem dokunmatik ekranlar için ortak dinleyiciler
-        lighter.addEventListener('mousedown', startDrag);
-        window.addEventListener('mousemove', moveDrag);
-        window.addEventListener('mouseup', stopDrag);
-
-        lighter.addEventListener('touchstart', startDrag, {passive: false});
-        window.addEventListener('touchmove', moveDrag, {passive: false});
-        window.addEventListener('touchend', stopDrag);
-
-        function startFireworks() {
+        function triggerSequence() {
             isDragging = false;
             lighter.style.display = 'none';
             fuse.classList.add('burning');
@@ -399,24 +405,23 @@
             setTimeout(() => {
                 uiContainer.style.display = 'none';
                 showActive = true;
-                timeline = 0;
-                loop();
+                startShow();
             }, 1500);
         }
 
-        // --- HAVAİ FİŞEK PARÇACIK MOTORU ---
-        class PixelParticle {
-            constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
+        class GlowingParticle {
+            constructor(x, y, vx, vy, color, size, fade, gravity = 0.05, drag = 0.96) {
                 this.x = x; this.y = y;
                 this.vx = vx; this.vy = vy;
                 this.color = color;
-                this.size = size; 
+                this.size = size;
                 this.fade = fade;
                 this.gravity = gravity;
+                this.drag = drag;
                 this.alpha = 1;
             }
             update() {
-                this.vx *= 0.94; this.vy *= 0.94;
+                this.vx *= this.drag; this.vy *= this.drag;
                 this.vy += this.gravity;
                 this.x += this.vx; this.y += this.vy;
                 this.alpha -= this.fade;
@@ -424,8 +429,12 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
+                ctx.shadowBlur = this.size * 2;
+                ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
             }
         }
@@ -434,7 +443,7 @@
             constructor(startX, startY, targetY, isFinal = false) {
                 this.x = startX; this.y = startY; this.targetY = targetY;
                 this.isFinal = isFinal;
-                this.vy = isFinal ? -4.5 : -Math.random() * 3 - 5;
+                this.vy = isFinal ? -6 : -Math.random() * 3 - 6;
                 this.alive = true;
             }
             update() {
@@ -447,39 +456,43 @@
                         explodeStandard(this.x, this.y);
                     }
                 }
-                if (Math.random() < 0.3) {
-                    particles.push(new PixelParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#ffb3d9', 4, 0.05, 0.02));
+                if (Math.random() < 0.4) {
+                    particles.push(new GlowingParticle(this.x, this.y, Math.random() * 1 - 0.5, 0.5, '#ffaa00', 3, 0.04, 0.01, 0.98));
                 }
             }
             draw() {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffffff';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 2, this.y, 4, 12);
+                ctx.fillRect(this.x - 1, this.y, 3, 10);
+                ctx.restore();
             }
         }
 
         function explodeStandard(cx, cy) {
-            const colors = ['#ff3388', '#ff66aa', '#ffb3d9', '#ff0055', '#ffffff'];
+            const colors = ['#ff007f', '#00ffcc', '#ffcc00', '#00ffff', '#ff3366', '#b026ff'];
             const chosenColor = colors[Math.floor(Math.random() * colors.length)];
             const isHeart = Math.random() < 0.5;
 
             if (isHeart) {
-                for (let angle = 0; angle < Math.PI * 2; angle += 0.09) {
-                    const r = 4.5;
-                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.12;
-                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.12;
-                    particles.push(new PixelParticle(cx, cy, vx, vy, chosenColor, 6, Math.random() * 0.01 + 0.006, 0.03));
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.06) {
+                    const r = 5.5;
+                    const vx = r * 16 * Math.pow(Math.sin(angle), 3) * 0.1;
+                    const vy = -r * (13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 0.1;
+                    particles.push(new GlowingParticle(cx, cy, vx, vy, chosenColor, 5, Math.random() * 0.008 + 0.005, 0.03, 0.98));
                 }
             } else {
-                for (let i = 0; i < 55; i++) {
+                for (let i = 0; i < 70; i++) {
                     const angle = Math.random() * Math.PI * 2;
                     const speed = Math.random() * 5 + 1;
-                    particles.push(new PixelParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 6, Math.random() * 0.02 + 0.01, 0.05));
+                    particles.push(new GlowingParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, chosenColor, 4, Math.random() * 0.015 + 0.008));
                 }
             }
         }
 
         function explodeFinalText(cx, cy) {
-            const pixelSize = Math.max(4, Math.min(8, window.innerWidth / 60)); 
+            const pixelSize = 7; 
             const charWidth = 6 * pixelSize; 
             const spacing = 3 * pixelSize; 
             const totalWidth = (wordSequence.length * charWidth) + ((wordSequence.length - 1) * spacing);
@@ -491,57 +504,21 @@
                     matrix.forEach(([row, col]) => {
                         const px = startX + (col * pixelSize);
                         const py = cy + (row * pixelSize) - (3.5 * pixelSize);
-                        const color = char === '#' ? '#ffb3d9' : '#ff0055';
                         
-                        particles.push(new PixelParticle(
-                            px, py, 
-                            Math.random() * 0.06 - 0.03, Math.random() * 0.06 - 0.03, 
-                            color, pixelSize, 0.0003, 0.001
-                        ));
+                        const color = char === '#' ? '#00ffcc' : '#ff007f';
+                        for(let k=0; k<2; k++){
+                            particles.push(new GlowingParticle(
+                                px + (Math.random()*4-2), py + (Math.random()*4-2), 
+                                Math.random() * 0.4 - 0.2, Math.random() * 0.4 - 0.2, 
+                                color, 7, Math.random() * 0.003 + 0.002, 0.005, 0.99
+                            ));
+                        }
                     });
                 }
                 startX += charWidth + spacing;
             });
-        }
 
-        function loop() {
-            if (!showActive) return;
-            animationFrame = requestAnimationFrame(loop);
-            
-            ctx.fillStyle = 'rgba(26, 15, 26, 0.2)'; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            timeline++;
-
-            if (timeline % 50 === 1 && timeline < 320) {
-                rockets.push(new Rocket(Math.random() * (canvas.width - 100) + 50, canvas.height, Math.random() * (canvas.height * 0.35) + canvas.height * 0.1));
-            }
-
-            if (timeline === 140) { msg.classList.add('show'); }
-
-            if (timeline === 380 && !finalRocketLaunched) {
-                finalRocketLaunched = true;
-                rockets.push(new Rocket(canvas.width / 2, canvas.height, canvas.height * 0.35, true));
-            }
-
-            if (timeline === 1150) { 
-                replayBtn.style.display = 'block';
-            }
-
-            rockets.forEach((r, index) => {
-                r.update(); r.draw();
-                if (!r.alive) rockets.splice(index, 1);
-            });
-
-            particles.forEach((p, index) => {
-                p.update(); p.draw();
-                if (p.alpha <= 0) particles.splice(index, 1);
-            });
-        }
-
-        replayBtn.onclick = function() { location.reload(); };
-        replayBtn.ontouchend = function() { location.reload(); };
-    </script>
-</body>
-</html>
-
+            for (let i = 0; i < 150; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 9 + 3;
+                particles.push(new GlowingPart
