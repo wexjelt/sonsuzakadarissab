@@ -1,9 +1,9 @@
-<!DOC<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Seni Seviyorum...</title>
+    <title>ISSAB...</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sacramento&display=swap" rel="stylesheet">
     <style>
         * {
@@ -16,37 +16,108 @@
             touch-action: none; 
         }
         body, html {
-            background-color: #000000;
+            background-color: #050505;
             overflow: hidden;
             width: 100%;
             height: 100dvh;
             position: relative;
             overscroll-behavior: none;
+            font-family: 'Press Start 2P', monospace;
         }
         canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
             image-rendering: pixelated;
         }
+        
+        /* --- SORU EKRANI MODALI --- */
+        #quiz-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.8s ease;
+        }
+        .quiz-box {
+            background: #111;
+            border: 4px solid #aa00ff;
+            box-shadow: 0 0 20px rgba(170,0,255,0.4), inset -6px -6px 0 #080808;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            image-rendering: pixelated;
+        }
+        .quiz-title {
+            color: #fff;
+            font-size: 11px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        .quiz-input {
+            width: 100%;
+            background: #000;
+            border: 4px solid #333;
+            color: #00ffcc;
+            padding: 12px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.8);
+        }
+        .quiz-input:focus {
+            border-color: #00ffcc;
+        }
+        .quiz-btn {
+            background: #000;
+            color: #aa00ff;
+            border: 4px solid #aa00ff;
+            padding: 12px 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #4a0072;
+            width: 100%;
+        }
+        .quiz-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #4a0072;
+        }
+        .error-msg {
+            color: #ff3333;
+            font-size: 8px;
+            margin-top: 15px;
+            min-height: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- OYUN ALANI --- */
         #ui-container {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 10;
-            display: flex;
+            display: none; /* Soru geçilince açılacak */
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: calc(40px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+            padding: calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
         }
         .instruction {
-            font-family: 'Press Start 2P', monospace;
             font-size: 9px;
             color: #fff;
             text-align: center;
@@ -57,8 +128,8 @@
             pointer-events: none;
         }
         @keyframes neonPulse {
-            from { opacity: 0.6; text-shadow: 0 0 5px #aa00ff, 0 0 10px #aa00ff; }
-            to { opacity: 1; text-shadow: 0 0 10px #aa00ff, 0 0 20px #aa00ff, 0 0 30px #aa00ff; }
+            from { opacity: 0.6; text-shadow: 0 0 5px #aa00ff; }
+            to { opacity: 1; text-shadow: 0 0 10px #aa00ff, 0 0 20px #ff00ff; }
         }
         #stage {
             position: relative;
@@ -67,29 +138,25 @@
         }
         #firework-box {
             position: absolute;
-            bottom: 25%;
-            left: 50%;
+            bottom: 25%; left: 50%;
             transform: translateX(-50%);
-            width: 75px;
-            height: 95px;
-            background: #111;
-            border: 4px solid #222;
-            box-shadow: inset -8px -8px 0 #151515, 0 0 15px rgba(170,0,255,0.2);
+            width: 76px; height: 96px;
+            background: #141414;
+            border: 4px solid #282828;
+            box-shadow: inset -8px -8px 0 #0a0a0a, 0 0 15px rgba(170,0,255,0.15);
             image-rendering: pixelated;
         }
         #firework-box::after {
             content: '';
             position: absolute;
             top: 12px; left: 12px; right: 12px; bottom: 12px;
-            background: repeating-linear-gradient(45deg, #4a0011, #4a0011 10px, #050505 10px, #050505 20px);
+            background: repeating-linear-gradient(45deg, #5c0016, #5c0016 8px, #0f0f0f 8px, #0f0f0f 16px);
         }
         #fuse {
             position: absolute;
-            top: -28px;
-            left: 50%;
-            width: 6px;
-            height: 28px;
-            background: #444;
+            top: -28px; left: 50%;
+            width: 8px; height: 28px;
+            background: #333;
             transform: translateX(-50%);
             image-rendering: pixelated;
         }
@@ -97,11 +164,11 @@
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to bottom, #666 50%, transparent 50%);
+            background-image: linear-gradient(to bottom, #555 50%, transparent 50%);
             background-size: 100% 8px;
         }
         #fuse.burning::before {
-            background-image: linear-gradient(to bottom, #ff3300 50%, #aa00ff 50%);
+            background-image: linear-gradient(to bottom, #ff3300 50%, #ffcc00 50%);
             animation: fuseBurn 1.5s linear forwards;
         }
         @keyframes fuseBurn {
@@ -110,14 +177,12 @@
         }
         #lighter {
             position: absolute;
-            bottom: 8%;
-            left: 50%;
+            bottom: 8%; left: 50%;
             transform: translateX(-50%);
-            width: 48px;
-            height: 72px;
-            background: #1a1a1a;
-            border: 4px solid #333;
-            box-shadow: inset -6px -6px 0 #0d0d0d;
+            width: 48px; height: 72px;
+            background: #1c1c1c;
+            border: 4px solid #3a3a3a;
+            box-shadow: inset -6px -6px 0 #0a0a0a;
             z-index: 100;
         }
         #lighter-top {
@@ -125,16 +190,16 @@
             top: -16px; left: 5px;
             width: 30px; height: 16px;
             background: #555;
-            border: 4px solid #666;
+            border: 4px solid #777;
             border-bottom: none;
         }
         #flame {
             position: absolute;
             top: -24px; left: 9px;
             width: 12px; height: 24px;
-            background: #aa00ff;
-            border: 2px solid #ff00ff;
-            box-shadow: 0 0 10px #aa00ff;
+            background: #ff3300;
+            border: 2px solid #ffcc00;
+            box-shadow: 0 0 10px #ff3300;
             opacity: 0;
             transform: scale(0);
             transition: transform 0.2s;
@@ -142,16 +207,15 @@
         #lighter.ignited #flame {
             opacity: 1;
             transform: scale(1);
-            animation: pixelFlicker 0.15s infinite alternate;
+            animation: pixelFlicker 0.1s infinite alternate;
         }
         @keyframes pixelFlicker {
-            0% { transform: scale(1) translate(1px, 0); background: #aa00ff; }
-            100% { transform: scale(1.1) translate(-1px, -2px); background: #ff00ff; }
+            0% { transform: scale(1) translate(1px, 0); background: #ff3300; }
+            100% { transform: scale(1.1) translate(-1px, -1px); background: #ffcc00; }
         }
         #text-overlay {
             position: absolute;
-            top: 45%;
-            left: 50%;
+            top: 45%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 5;
             text-align: center;
@@ -160,22 +224,20 @@
         }
         .love-message {
             font-family: 'Sacramento', cursive;
-            font-size: 2.8rem;
+            font-size: 3rem;
             color: #fff;
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 25px rgba(170,0,255,0.5);
+            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 25px rgba(255,0,102,0.5);
             transition: opacity 2s, transform 2s;
         }
         .love-message.show {
             opacity: 1;
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
         #replay-btn {
             position: absolute;
-            bottom: 8%;
-            left: 50%;
+            bottom: 8%; left: 50%;
             transform: translateX(-50%) scale(0);
-            font-family: 'Press Start 2P', monospace;
             font-size: 10px;
             padding: 12px 20px;
             background: #000;
@@ -189,6 +251,15 @@
     </style>
 </head>
 <body>
+
+    <div id="quiz-overlay">
+        <div class="quiz-box">
+            <div class="quiz-title" id="quiz-question">Beraber gideceğimiz ülke?<br>(Örn:İsviçre)</div>
+            <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
+            <button class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
+            <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
+        </div>
+    </div>
 
     <canvas id="canvas"></canvas>
 
@@ -207,6 +278,9 @@
     <button id="replay-btn">TEKRAR OYNAT</button>
 
     <script>
+        // --- AYARLAR ---
+        const DOGRU_CEVAP = "İsviçre"; // İstediğin cevabı buraya yazabilirsin (büyük küçük harfe duyarsızdır)
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const lighter = document.getElementById('lighter');
@@ -215,6 +289,10 @@
         const infoText = document.getElementById('info-text');
         const msg = document.getElementById('msg');
         const replayBtn = document.getElementById('replay-btn');
+        const quizOverlay = document.getElementById('quiz-overlay');
+        const quizAnswer = document.getElementById('quiz-answer');
+        const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+        const quizError = document.getElementById('quiz-error');
 
         let isIgnited = false;
         let isDragging = false;
@@ -224,13 +302,98 @@
         let timeline = 0;
         let showActive = false;
 
+        // --- GELİŞMİŞ SES SENTEZLEYİCİSİ (Sentez Motoru) ---
+        const AudioFX = {
+            ctx: null,
+            init() { 
+                if(!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playClick() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
+            },
+            playBurn() {
+                try {
+                    this.init(); const bufferSize = this.ctx.sampleRate * 1.5, buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate), data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                    const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1000;
+                    const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.5);
+                    noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination); noise.start();
+                } catch(e) {}
+            },
+            playLaunch() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(45, this.ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(280, this.ctx.currentTime + 1.2);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 1.2);
+                } catch(e) {}
+            },
+            playExplode() {
+                try {
+                    this.init(); const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.6);
+                    gain.gain.setValueAtTime(0.5, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.6);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.6);
+                    
+                    // Minecraft usulü ardıl çıtırtı sesi
+                    setTimeout(() => this.playCrack(), 50);
+                    setTimeout(() => this.playCrack(), 150);
+                } catch(e) {}
+            },
+            playCrack() {
+                try {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'square'; osc.frequency.setValueAtTime(Math.random() * 300 + 200, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.04, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.08);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
+            }
+        };
+
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
+        // --- QUIZ DOĞRULAMA SİSTEMİ ---
+        function checkAnswer() {
+            const userAns = quizAnswer.value.trim().toLowerCase();
+            if(userAns === DOGRU_CEVAP.toLowerCase()) {
+                // Tarayıcı kilidini burada açıyoruz
+                AudioFX.init();
+                AudioFX.playClick();
+                
+                quizOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    quizOverlay.style.display = 'none';
+                    uiContainer.style.display = 'flex';
+                    setTimeout(() => uiContainer.style.opacity = '1', 50);
+                }, 800);
+            } else {
+                quizError.style.opacity = '1';
+                quizAnswer.value = "";
+                setTimeout(() => { quizError.style.opacity = '0'; }, 3000);
+            }
+        }
+        quizSubmitBtn.addEventListener('click', checkAnswer);
+        quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(); });
+
+        // --- DOKUNMATİK SÜRÜKLEME VE ATEŞLEME ---
         let startX = 0, startY = 0;
 
         function onTouchStart(e) {
             e.preventDefault(); 
+            AudioFX.playClick();
             
             if (!isIgnited) {
                 isIgnited = true;
@@ -286,6 +449,7 @@
             lighter.style.display = 'none';
             fuse.classList.add('burning');
             infoText.style.opacity = '0';
+            AudioFX.playBurn();
 
             setTimeout(() => {
                 uiContainer.style.transition = 'opacity 0.6s';
@@ -298,164 +462,45 @@
             }, 1500);
         }
 
+        // --- MINECRAFT STİLİ PARÇACIK VE GÜL MOTORU ---
         class PixelParticle {
-            constructor(x, y, angle, speed, isText = false) {
+            constructor(x, y, vx, vy, type = 'spark') {
                 this.x = x; this.y = y;
-                this.vx = Math.cos(angle) * speed;
-                this.vy = Math.sin(angle) * speed;
+                this.vx = vx; this.vy = vy;
+                this.type = type; // 'spark', 'rose', 'trail'
                 this.alpha = 1;
-                this.fade = isText ? 0.009 : (Math.random() * 0.01 + 0.007);
-                this.gravity = isText ? 0 : 0.05;
-                this.size = isText ? 4 : (Math.random() * 2 + 4); 
-                this.isText = isText;
-                this.isGlow = !isText && Math.random() > 0.70;
+                
+                if (type === 'rose') {
+                    this.size = 6; // Minecraft tarzı kare blok gül boyutu
+                    this.fade = Math.random() * 0.006 + 0.004;
+                    this.gravity = 0.04;
+                    this.drag = 0.98;
+                } else if (type === 'trail') {
+                    this.size = 4;
+                    this.fade = 0.03;
+                    this.gravity = 0.01;
+                    this.drag = 0.95;
+                } else { // spark
+                    this.size = 5;
+                    this.fade = Math.random() * 0.012 + 0.008;
+                    this.gravity = 0.07;
+                    this.drag = 0.96;
+                }
             }
             update() {
-                this.vx *= 0.96; this.vy *= 0.96;
-                this.x += this.vx; this.y += this.vy + this.gravity;
+                this.vx *= this.drag; this.vy *= this.drag;
+                this.vy += this.gravity;
+                this.x += this.vx; this.y += this.vy;
                 this.alpha -= this.fade;
             }
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
                 
-                if (this.isText) {
-                    ctx.fillStyle = '#00ffcc'; 
-                    ctx.shadowColor = '#00ffcc'; ctx.shadowBlur = 10;
-                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
-                } else if (this.isGlow) {
-                    ctx.fillStyle = '#ff00ff';
-                    ctx.shadowColor = '#aa00ff'; ctx.shadowBlur = 6;
-                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 2, 2);
-                } else {
-                    ctx.translate(Math.floor(this.x), Math.floor(this.y));
-                    ctx.fillStyle = '#030303'; 
-                    ctx.fillRect(-3, -3, 6, 6);
-                    ctx.fillStyle = '#3a000e'; 
-                    ctx.fillRect(-2, -2, 4, 4);
-                    ctx.fillStyle = '#5c0016'; 
-                    ctx.fillRect(-1, -1, 2, 2);
-                }
-                ctx.restore();
-            }
-        }
+                // Kalın çerçeveli 8-bit piksel tasarımı
+                if (this.type === 'rose') {
+                    // Gül yaprağı kısmı (Kırmızı)
+                    ctx.fillStyle = '#e60036';
+                    ctx.fillRect(Math.floor(thi
 
-        class PixelRocket {
-            constructor(targetX, targetY, isFinal = false) {
-                this.x = isFinal ? canvas.width / 2 : (Math.random() * canvas.width * 0.7 + canvas.width * 0.1);
-                this.y = canvas.height + 10;
-                this.targetX = targetX; this.targetY = targetY;
-                this.isFinal = isFinal;
-                this.speed = isFinal ? 4.0 : (Math.random() * 1.5 + 4.5);
-                const angle = Math.atan2(targetY - this.y, targetX - this.x);
-                this.vx = Math.cos(angle) * this.speed;
-                this.vy = Math.sin(angle) * this.speed;
-                this.done = false;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                if (Math.random() > 0.4) {
-                    ctx.fillStyle = '#aa00ff';
-                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 2, 2);
-                }
-                if (this.y <= this.targetY) { this.done = true; this.explode(); }
-            }
-            draw() {
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = '#aa00ff'; ctx.shadowBlur = 8;
-                ctx.fillRect(Math.floor(this.x) - 1, Math.floor(this.y), 3, 6);
-                ctx.shadowBlur = 0;
-            }
-            explode() {
-                if (this.isFinal) {
-                    const matrix = [
-                        "##..###..###...##..###.",
-                        "##..#....#....#..#.#..#",
-                        "##..###..###..####.###.",
-                        "##....#....#..#..#.#..#",
-                        "##..###..###..#..#.###."
-                    ];
-                    const scale = window.innerWidth < 500 ? 6 : 8; 
-                    const startX = this.x - (matrix[0].length * scale) / 2;
-                    const startY = this.y - (matrix.length * scale) / 2;
-
-                    for(let r=0; r<matrix.length; r++) {
-                        for(let c=0; c<matrix[r].length; c++) {
-                            if(matrix[r][c] === '#') {
-                                const px = startX + c * scale;
-                                const py = startY + r * scale;
-                                const angle = Math.random() * Math.PI * 2;
-                                const speed = Math.random() * 0.4;
-                                particles.push(new PixelParticle(px, py, angle, speed, true));
-                            }
-                        }
-                    }
-                } else {
-                    ctx.save();
-                    ctx.fillStyle = 'rgba(170, 0, 255, 0.12)';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, 100, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-
-                    const count = window.innerWidth < 500 ? 70 : 100; 
-                    for (let i = 0; i < count; i++) {
-                        const angle = (Math.PI * 2 / count) * i + Math.random() * 0.4;
-                        const speed = Math.random() * 4 + 1.2;
-                        particles.push(new PixelParticle(this.x, this.y, angle, speed, false));
-                    }
-                }
-            }
-        }
-
-        function startShow() {
-            function loop() {
-                if(!showActive) return;
-                ctx.fillStyle = 'rgba(0,0,0,0.26)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                timeline++;
-
-                if (timeline < 240 && timeline % 40 === 0) {
-                    rockets.push(new PixelRocket(Math.random() * canvas.width * 0.7 + canvas.width * 0.1, Math.random() * canvas.height * 0.3 + canvas.height * 0.15));
-                }
-
-                if (timeline === 130) msg.classList.add('show');
-                if (timeline === 300) msg.classList.remove('show');
-                if (timeline === 340) rockets.push(new PixelRocket(canvas.width / 2, canvas.height * 0.3, true));
-                if (timeline === 480) replayBtn.style.transform = 'translateX(-50%) scale(1)';
-
-                for (let i = rockets.length - 1; i >= 0; i--) {
-                    rockets[i].update(); if (!rockets[i].done) rockets[i].draw(); else rockets.splice(i, 1);
-                }
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    particles[i].update(); if (particles[i].alpha > 0) particles[i].draw(); else particles.splice(i, 1);
-                }
-
-                animationFrame = requestAnimationFrame(loop);
-            }
-            loop();
-        }
-
-        replayBtn.addEventListener('click', () => {
-            cancelAnimationFrame(animationFrame);
-            timeline = 0; rockets = []; particles = []; showActive = false; isIgnited = false; isDragging = false;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            msg.classList.remove('show');
-            replayBtn.style.transform = 'translateX(-50%) scale(0)';
-            
-            lighter.style.removeProperty('left'); lighter.style.removeProperty('top');
-            lighter.style.display = 'block'; lighter.classList.remove('ignited');
-            lighter.style.transform = 'translateX(-50%)';
-            fuse.classList.remove('burning');
-            infoText.innerHTML = "Çakmağa Dokun ve Yak!<br>Sonra Sürükleyip Fitili Ateşle.";
-            
-            uiContainer.style.display = 'flex';
-            setTimeout(() => { uiContainer.style.opacity = '1'; }, 50);
-        });
-    </script>
-</body>
-</html>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
