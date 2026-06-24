@@ -257,7 +257,8 @@
 
     <div id="quiz-overlay">
         <div class="quiz-box">
-            <div class="quiz-title" id="quiz-question">Bizim için en özel tarih hangisi?<br>(Örn:Baş harfi sen)</div>
+            <!-- Soru ve ipucu güncellendi -->
+            <div class="quiz-title" id="quiz-question">Beraber gitmek istediğimiz ülke?<br>(İpucu: Baş harfi sen)</div>
             <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
             <button class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
             <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
@@ -474,6 +475,7 @@
             }, 1500);
         }
 
+        // --- PARTİKÜL VE HAVAİ FİŞEK MOTORU (TAMAMLANDI) ---
         class PixelParticle {
             constructor(x, y, vx, vy, type = 'spark') {
                 this.x = x; this.y = y;
@@ -507,7 +509,4 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
-                
-                if (this.type === 'rose') {
-                    ctx.fillStyle = '#e60036';
-                    ctx.fillRect(Math.floor(this.x), Math.floor(
+               
