@@ -28,12 +28,10 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            display: none;
-            pointer-events: none;
             image-rendering: pixelated;
         }
         
-        /* --- ROMANTİK PIXEL ART SORU EKRANI --- */
+        /* --- SORU EKRANI KATMANI --- */
         #quiz-overlay {
             position: absolute;
             top: 0; left: 0;
@@ -104,7 +102,7 @@
             transition: opacity 0.3s;
         }
 
-        /* --- OYUN ALANI --- */
+        /* --- OYUN ALANI KATMANI --- */
         #ui-container {
             position: absolute;
             top: 0; left: 0;
@@ -254,7 +252,7 @@
 
     <div id="quiz-overlay">
         <div class="quiz-box">
-            <div class="quiz-title" id="quiz-question">Her şeyin başladığı gün?</div>
+            <div class="quiz-title">Her şeyin başladığı gün?</div>
             <input type="text" class="quiz-input" id="quiz-answer" placeholder="Cevabı yaz..." autocomplete="off">
             <button type="button" class="quiz-btn" id="quiz-submit-btn">GİRİŞ YAP</button>
             <div class="error-msg" id="quiz-error">Yanlış cevap, tekrar dene sevgilim... ❤️</div>
@@ -297,7 +295,7 @@
         let rockets = [];
         let animationFrame;
         let timeline = 0;
-        let showActive = false; // BAŞLANGIÇTA TAMAMEN KAPALI
+        let showActive = false;
         let finalRocketLaunched = false;
 
         const textGrid = {
@@ -310,49 +308,44 @@
         const wordSequence = ["#", "İ", "S", "S", "A", "B"];
 
         function forceResize() {
-            const w = (window.innerWidth && window.innerWidth > 0) ? window.innerWidth : window.screen.width;
-            const h = (window.innerHeight && window.innerHeight > 0) ? window.innerHeight : window.screen.height;
-            canvas.width = w;
-            canvas.height = h;
+            canvas.width = window.innerWidth || screen.width;
+            canvas.height = window.innerHeight || screen.height;
         }
+        window.addEventListener('resize', forceResize);
+        forceResize();
 
-        // KUSURSUZ GİRİŞ VE SIFIRDAN TETİKLEME MOTORU
-        function checkAnswer(e) {
-            if(e) e.preventDefault();
-            
-            if (document.activeElement) {
-                document.activeElement.blur(); 
-            }
+        // TAMAMEN SIFIRDAN YAZILMIŞ, ÇÖKMEYEN GARANTİLİ KONTROL FONKSİYONU
+        function handleVerification() {
+            // Mobil cihazlarda klavyeyi kapat
+            quizAnswer.blur();
 
-            let rawInput = quizAnswer.value.trim().toLowerCase()
+            // Harfleri temizle
+            let text = quizAnswer.value.trim().toLowerCase()
                 .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
-                .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+                .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                .replace(/[^a-z0-9]/g, '');
 
-            let cleanInput = rawInput.replace(/[^a-z0-9]/g, '');
-
-            if(cleanInput === "9mart" || cleanInput === "09mart" || cleanInput === "9" || cleanInput === "0903" || cleanInput === "93") {
-                
-                // Ekranları değiştir
-                quizOverlay.style.display = 'none';
-                canvas.style.display = 'block';
-                uiContainer.style.display = 'flex';
-                
-                // Boyutları oturt
+            // Tüm doğru olasılıkları yakala
+            if (text === "9mart" || text === "09mart" || text === "9" || text === "0903" || text === "93") {
+                // Tarayıcıyı kitleyen tüm CSS yüklerini kaldır, direkt görünür yap
+                quizOverlay.style.display = "none";
+                uiContainer.style.display = "flex";
                 forceResize();
-                setTimeout(forceResize, 50);
-                window.addEventListener('resize', forceResize);
-                
             } else {
+                // Yanlış cevap durumunda hata mesajı tetikle
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
                 setTimeout(() => { quizError.style.opacity = '0'; }, 2000);
             }
         }
-        
-        quizSubmitBtn.addEventListener('click', checkAnswer);
-        quizAnswer.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAnswer(e); });
 
-        // --- DOKUNMATİK SÜRÜKLEME ---
+        // Tıklama ve Enter Tuşu Dinleyicileri
+        quizSubmitBtn.onclick = handleVerification;
+        quizAnswer.onkeypress = function(e) {
+            if (e.key === 'Enter') handleVerification();
+        };
+
+        // --- POINTER EVENTS GÜVENLİ SÜRÜKLEME ---
         let startX = 0, startY = 0;
 
         function onPointerDown(e) {
@@ -410,13 +403,13 @@
             infoText.style.opacity = '0';
             setTimeout(() => {
                 uiContainer.style.display = 'none';
-                showActive = true; // MOTORU ŞİMDİ GERÇEKTEN ATEŞLİYORUZ
-                timeline = 0;      // SAYAÇ SIFIRDAN BAŞLIYOR
+                showActive = true;
+                timeline = 0;
                 loop();
             }, 1500);
         }
 
-        // --- KANVAS PIXEL PARÇACIK MOTORU ---
+        // --- PIXEL PARÇACIK MOTORU ---
         class MinecraftLoveParticle {
             constructor(x, y, vx, vy, color, size, fade, gravity = 0.07) {
                 this.x = x; this.y = y;
@@ -520,4 +513,18 @@
             for (let i = 0; i < 80; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = Math.random() * 7 + 2;
-                particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.0
+                particles.push(new MinecraftLoveParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.01 + 0.005, 0.04));
+            }
+        }
+
+        function loop() {
+            if (!showActive) return;
+            animationFrame = requestAnimationFrame(loop);
+            
+            ctx.fillStyle = 'rgba(26, 15, 26, 0.2)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            timeline++;
+
+            if (timeline % 50 === 1 && timeline < 320) {
+ 
