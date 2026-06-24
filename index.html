@@ -323,17 +323,15 @@
 
         function checkAnswer(e) {
             if(e) e.preventDefault();
-            if (document.activeElement) { document.activeElement.blur(); }
 
             const girdi = temizle(quizAnswer.value);
             if(girdi === "isvicre" || girdi === "isviçre") {
-                setTimeout(() => {
-                    quizOverlay.style.display = 'none'; 
-                    uiContainer.style.display = 'flex';
-                    canvas.style.display = 'block';
-                    window.addEventListener('resize', resize); 
-                    resize();
-                }, 100);
+                if (document.activeElement) { document.activeElement.blur(); }
+                quizOverlay.style.display = 'none'; 
+                uiContainer.style.display = 'flex';
+                canvas.style.display = 'block';
+                window.addEventListener('resize', resize); 
+                resize();
             } else {
                 quizError.style.opacity = '1';
                 quizAnswer.value = "";
@@ -425,7 +423,6 @@
                 ctx.save();
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
-                // Yuvarlak (arc) yerine keskin Minecraft karesi (fillRect)
                 ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
                 ctx.restore();
             }
@@ -448,7 +445,6 @@
                         explodeStandard(this.x, this.y);
                     }
                 }
-                // Roket arkasındaki Minecraft duman pikselleri
                 if (Math.random() < 0.4) {
                     particles.push(new MinecraftParticle(this.x, this.y, Math.random() * 1 - 0.5, 1, '#555555', 4, 0.05, 0.01, 0.98));
                 }
@@ -456,7 +452,7 @@
             draw() {
                 ctx.save();
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(this.x - 2, this.y, 4, 12); // Pikselli roket gövdesi
+                ctx.fillRect(this.x - 2, this.y, 4, 12);
                 ctx.restore();
             }
         }
@@ -482,7 +478,6 @@
             }
         }
 
-        // HAFİF VE UZUN SÜRE HAVADA ASILI KALAN BÜYÜK FİNAL YAZISI
         function explodeFinalText(cx, cy) {
             const pixelSize = Math.max(5, Math.min(8, window.innerWidth / 55)); 
             const charWidth = 6 * pixelSize; 
@@ -498,8 +493,6 @@
                         const py = cy + (row * pixelSize) - (3.5 * pixelSize);
                         const color = char === '#' ? '#00ffcc' : '#ff007f';
                         
-                        // Yazının havada donmuş gibi kalması için fade hızı aşırı düşürüldü (0.00015) 
-                        // Yerçekimi ivmesi neredeyse sıfıra çekildi (0.0005)
                         particles.push(new MinecraftParticle(
                             px, py, 
                             Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, 
@@ -510,8 +503,23 @@
                 startX += charWidth + spacing;
             });
 
-            // Yazının dış patlama çevre pikselleri
             for (let i = 0; i < 120; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = Math.random() * 8 + 2;
-                particles.push(new MinecraftParticle(cx, cy, Mat
+                particles.push(new MinecraftParticle(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, '#ffffff', 5, Math.random() * 0.01 + 0.005, 0.05, 0.96));
+            }
+        }
+
+        function startShow() { timeline = 0; loop(); }
+
+        function loop() {
+            if (!showActive) return;
+            animationFrame = requestAnimationFrame(loop);
+            
+            ctx.fillStyle = 'rgba(17, 11, 17, 0.2)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            timeline++;
+
+            if (timeline % 45 === 1 && timeline < 320) {
+                rockets.pu
