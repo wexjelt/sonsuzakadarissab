@@ -129,7 +129,7 @@
             transition: opacity 2s ease-in-out;
         }
 
-        /* Final Yazısı (#İSSAB) - Romantik font, başlangıçta gizli */
+        /* Final Yazısı (#İSSAB) - Romantik font */
         #msg2 {
             top: 50%;
             transform: translate(-50%, -50%);
@@ -141,7 +141,6 @@
             text-shadow: 0 0 30px rgba(255, 105, 180, 0.9), 0 0 60px rgba(255, 20, 147, 0.7), 0 0 100px #ff1493;
             opacity: 0;
             display: none;
-            transition: none; /* Opaklığı manuel yöneteceğiz */
             white-space: nowrap;
         }
 
@@ -218,8 +217,10 @@
     const ctx = canvas.getContext('2d');
     let particles = [];
     let rocketInterval;
-    let textFadeInterval = null; // Yazı kaybolma interval'i
-    
+    let textFadeInterval = null;
+    let stars = [];
+    let time = 0;
+
     function ignite() {
         document.getElementById('stage2').style.opacity = '0';
         setTimeout(() => {
@@ -234,21 +235,118 @@
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        // Yıldızları yeniden oluştur
+        generateStars();
     }
 
+    // --- YILDIZLAR ve AY ---
+    function generateStars() {
+        stars = [];
+        const count = 180;
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height * 0.85, // yukarıda kalsın
+                radius: Math.random() * 2.2 + 0.8,
+                baseOpacity: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.02 + 0.01,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    function drawNightSky() {
+        // 1. Gece göğü gradienti
+        const grad = ctx.createRadialGradient(
+            canvas.width * 0.8, canvas.height * 0.1, 100,
+            canvas.width * 0.5, canvas.height * 0.5, canvas.width * 0.8
+        );
+        grad.addColorStop(0, '#1a2a4a');
+        grad.addColorStop(0.5, '#0f1a2f');
+        grad.addColorStop(1, '#05080f');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Yıldızlar (parıldama efekti)
+        time += 0.01;
+        for (let star of stars) {
+            const opacity = star.baseOpacity * (0.7 + 0.3 * Math.sin(time * star.speed + star.phase));
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 240, ${opacity})`;
+            ctx.shadowColor = 'rgba(255,255,220,0.3)';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        // 3. Ay (sağ üstte, büyük ve parlak)
+        const moonX = canvas.width * 0.78;
+        const moonY = canvas.height * 0.12;
+        const moonRadius = Math.min(canvas.width, canvas.height) * 0.09;
+
+        // Işık halesi
+        const glow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.2, moonX, moonY, moonRadius * 2.5);
+        glow.addColorStop(0, 'rgba(255, 250, 210, 0.8)');
+        glow.addColorStop(0.3, 'rgba(255, 240, 180, 0.3)');
+        glow.addColorStop(1, 'rgba(255, 240, 180, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ay gövdesi (dolunay)
+        ctx.shadowColor = 'rgba(255, 250, 200, 0.6)';
+        ctx.shadowBlur = 40;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+        const moonGrad = ctx.createRadialGradient(
+            moonX - moonRadius * 0.3, moonY - moonRadius * 0.3, moonRadius * 0.1,
+            moonX, moonY, moonRadius
+        );
+        moonGrad.addColorStop(0, '#fffde8');
+        moonGrad.addColorStop(0.7, '#f5e6b0');
+        moonGrad.addColorStop(1, '#d4b87a');
+        ctx.fillStyle = moonGrad;
+        ctx.fill();
+
+        // Ay yüzeyindeki hafif kraterler (ince detay)
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(200, 180, 140, 0.15)';
+        ctx.beginPath();
+        ctx.arc(moonX - moonRadius * 0.25, moonY - moonRadius * 0.2, moonRadius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(moonX + moonRadius * 0.3, moonY + moonRadius * 0.1, moonRadius * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(moonX - moonRadius * 0.1, moonY + moonRadius * 0.3, moonRadius * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ayın parlak ışıması
+        ctx.shadowBlur = 0;
+        const innerGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonRadius * 0.9);
+        innerGlow.addColorStop(0, 'rgba(255,255,255,0.2)');
+        innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = innerGlow;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // --- PARÇACIK SINIFI (değişmedi) ---
     class Particle {
         constructor(x, y, vx, vy, color, type) {
             this.x = x; this.y = y;
             this.vx = vx; this.vy = vy;
             this.color = color;
-            this.type = type; // rocket, big_rocket, spark, big_spark, text_spark
+            this.type = type;
             this.alpha = 1;
             
             if (type === 'big_spark') {
                 this.decay = Math.random() * 0.003 + 0.004;
                 this.size = Math.random() * 5 + 3.5;
             } else if (type === 'text_spark') {
-                // Yazı kaybolurken çıkan özel kıvılcımlar – daha parlak ve uzun ömürlü
                 this.decay = Math.random() * 0.005 + 0.006;
                 this.size = Math.random() * 4 + 2;
             } else {
@@ -279,6 +377,8 @@
             ctx.globalAlpha = Math.max(0, this.alpha);
             ctx.globalCompositeOperation = 'lighter'; 
             ctx.fillStyle = this.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fill();
@@ -286,6 +386,7 @@
         }
     }
 
+    // --- PATLAMA FONKSİYONLARI (değişmedi) ---
     function explodeShape(startX, startY, shapeType, isBig = false) {
         const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff'];
         
@@ -319,41 +420,35 @@
             particles.push(new Particle(startX, startY, vx, vy, color, sparkType));
         }
 
-        // Büyük final patlaması – yazıyı göster ve kaybolma sürecini başlat
         if (isBig) {
             // Flaş efekti
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Yazıyı göster
             const msg2 = document.getElementById('msg2');
             msg2.style.display = 'block';
             msg2.style.opacity = '1';
             
-            // Kaybolma sürecini başlat
             startTextFirework();
         }
     }
 
-    // --- YAZI KAYBOLURKEN KIVILCIM SAÇMA ---
+    // --- YAZI KAYBOLMA KIVILCIMLARI (değişmedi) ---
     function startTextFirework() {
         const msg2 = document.getElementById('msg2');
         if (!msg2) return;
         
-        // Eğer önceki interval varsa temizle
         if (textFadeInterval) clearInterval(textFadeInterval);
         
         let opacity = 1.0;
-        const fadeStep = 0.006; // Her kademede azalma miktarı
-        const intervalMs = 50;   // 50ms'de bir güncelle
+        const fadeStep = 0.006;
+        const intervalMs = 50;
         
         textFadeInterval = setInterval(() => {
-            // Yazının merkez koordinatlarını al
             const rect = msg2.getBoundingClientRect();
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
             
-            // Her adımda 8-12 arası kıvılcım fırlat
             const sparkCount = Math.floor(Math.random() * 5) + 8;
             const colors = ['#ffb6c1', '#ff69b4', '#ff1493', '#ffa500', '#ffd700', '#fff'];
             
@@ -361,9 +456,8 @@
                 const angle = Math.random() * 2 * Math.PI;
                 const speed = Math.random() * 6 + 2;
                 const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed - 1; // hafif yukarı eğilim
+                const vy = Math.sin(angle) * speed - 1;
                 const color = colors[Math.floor(Math.random() * colors.length)];
-                // Başlangıç noktası yazının etrafına dağılsın
                 const offX = (Math.random() - 0.5) * rect.width * 0.8;
                 const offY = (Math.random() - 0.5) * rect.height * 0.8;
                 const p = new Particle(
@@ -376,11 +470,9 @@
                 particles.push(p);
             }
             
-            // Opaklığı azalt
             opacity = Math.max(0, opacity - fadeStep);
             msg2.style.opacity = opacity;
             
-            // Opaklık sıfıra ulaştığında interval'i durdur ve yazıyı gizle
             if (opacity <= 0) {
                 clearInterval(textFadeInterval);
                 textFadeInterval = null;
@@ -389,7 +481,6 @@
             }
         }, intervalMs);
         
-        // 4.5 saniye sonra güvenlik kapanışı (interval takılı kalmasın)
         setTimeout(() => {
             if (textFadeInterval) {
                 clearInterval(textFadeInterval);
@@ -400,6 +491,7 @@
         }, 5000);
     }
 
+    // --- ROKET FIRLATMA ---
     function launchRocket() {
         const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
         const vy = -(Math.random() * 4 + 11);
@@ -410,16 +502,19 @@
         particles.push(new Particle(canvas.width / 2, canvas.height, 0, -17, '#ff0055', 'big_rocket'));
     }
 
+    // --- ANİMASYON DÖNGÜSÜ (GÜNCELLENDİ) ---
     function animate() {
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // 1. Arka planı temizle ve gece gökyüzünü çiz
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawNightSky();
 
+        // 2. Tüm parçacıkları çiz
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.update();
             p.draw();
 
+            // Roketler patlama noktasına geldiğinde
             if (p.type === 'rocket' && p.vy >= -0.5) {
                 let shape = Math.random() > 0.5 ? 0 : 1; 
                 explodeShape(p.x, p.y, shape, false);
@@ -431,14 +526,16 @@
                 continue;
             }
 
+            // Ömrü bitenleri temizle
             if (p.alpha <= 0) {
                 particles.splice(i, 1);
             }
         }
+
         requestAnimationFrame(animate);
     }
 
-    // --- SENARYO ZAMANLAMALARI ---
+    // --- SENARYO ZAMANLAMALARI (değişmedi) ---
     function startFireworksScenario() {
         animate();
         rocketInterval = setInterval(launchRocket, 900);
@@ -460,6 +557,9 @@
             setTimeout(launchBigRocket, 1500);
         }, 12000);
     }
+
+    // Başlangıçta yıldızları oluştur
+    generateStars();
 </script>
 </body>
 </html>
