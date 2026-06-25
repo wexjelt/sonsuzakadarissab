@@ -22,7 +22,6 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 20;
             transition: opacity 0.5s;
-            display: block; /* Çakışmayı önlemek için flex kaldırıldı */
         }
 
         .instruction {
@@ -38,14 +37,21 @@
 
         #lighter {
             position: absolute;
-            top: 65%; left: 40%;
+            top: 65%; left: 25%;
             width: 45px; height: 80px;
             background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%);
             border-radius: 8px;
             box-shadow: inset -2px -2px 6px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.6);
-            cursor: grab;
+            cursor: pointer;
             z-index: 25;
-            touch-action: none; /* Tarayıcının varsayılan hareketlerini tamamen engeller */
+            /* Tıklandığında fitile otomatik gitmesi için pürüzsüz geçiş efekti */
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        
+        /* Çakmak tıklandığında fitilin üzerine yerleşecek animasyon sınıfı */
+        #lighter.igniting {
+            left: calc(50% - 22px) !important;
+            top: calc(100% - 220px) !important;
         }
         
         #lighter::before {
@@ -178,11 +184,11 @@
 <body>
 
     <div id="stage2">
-        <div class="instruction">Ateşlemek için çakmağı sürükle veya üzerine bir kez dokun!</div>
+        <div class="instruction">Ateşlemek için çakmağa bir kez dokun!</div>
         <div id="fuse"></div>
         <div id="firework-prop"></div>
         
-        <div id="lighter">
+        <div id="lighter" id="lighterBtn">
             <div class="flame" id="flame"></div>
         </div>
     </div>
@@ -211,7 +217,7 @@
                 startAmbientMusic();
             }
         } catch (e) {
-            console.log("Ses engellendi, görsel akış devam ediyor.");
+            console.log("Ses engellendi, görseller sorunsuz çalışacak.");
         }
     }
 
@@ -285,64 +291,28 @@
         loop();
     }
 
-    // --- KURŞUN GEÇİRMEZ KÜRESEL SÜRÜKLEME SİSTEMİ ---
+    // --- ARIZASIZ TIKLAMA VE OTOMATİK HAREKET SİSTEMİ ---
     const lighter = document.getElementById('lighter');
-    const fuse = document.getElementById('fuse');
-    let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-    let hasMoved = false;
+    let dynamicTriggered = false;
 
-    // Dokunma/Tıklama anında mesafe farkını ve durumu kaydet
-    lighter.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        hasMoved = false;
-        initAudio();
+    // Hem tıklama hem dokunma için tek bir tetikleyici (Hata ihtimali sıfır)
+    function handleActivation() {
+        if (dynamicTriggered) return;
+        dynamicTriggered = true;
+
+        initAudio(); // Ses motorunu başlat
         
-        const rect = lighter.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-        
-        lighter.style.cursor = 'grabbing';
-    });
+        // Çakmağı otomatik olarak fitilin üstüne uçur
+        lighter.classList.add('igniting');
 
-    // Takibi tüm ekranda (document) yapıyoruz, böylece elinden kaçması teknik olarak imkansız!
-    document.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
-        hasMoved = true;
-
-        let x = e.clientX - offsetX;
-        let y = e.clientY - offsetY;
-
-        // Ekran dışına taşmayı engelle sınırla
-        x = Math.max(0, Math.min(window.innerWidth - 45, x));
-        y = Math.max(0, Math.min(window.innerHeight - 80, y));
-
-        lighter.style.left = x + 'px';
-        lighter.style.top = y + 'px';
-
-        // Çakmak alevi ile fitil çarpışma testi
-        let fuseRect = fuse.getBoundingClientRect();
-        let flameRect = document.getElementById('flame').getBoundingClientRect();
-        
-        if (flameRect.right > fuseRect.left && flameRect.left < fuseRect.right &&
-            flameRect.bottom > fuseRect.top && flameRect.top < fuseRect.bottom) {
-            isDragging = false;
+        // Çakmak fitile ulaştığı an (800ms sonra) sahneyi başlat
+        setTimeout(() => {
             ignite();
-        }
-    });
+        }, 800);
+    }
 
-    document.addEventListener('pointerup', () => {
-        if (isDragging) {
-            isDragging = false;
-            lighter.style.cursor = 'grab';
-            
-            // EĞER SÜRÜKLENMEZSE (FALLBACK): Sadece dokunulduysa bile şov başlasın!
-            if (!hasMoved) {
-                ignite();
-            }
-        }
-    });
+    lighter.addEventListener('click', handleActivation);
+    lighter.addEventListener('touchstart', handleActivation, {passive: true});
 
     // --- GÖRSEL MOTOR ---
     const canvas = document.getElementById('canvas');
@@ -353,7 +323,6 @@
     let sandboxMode = false;
     
     function ignite() {
-        initAudio();
         document.getElementById('stage2').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('stage2').style.display = 'none';
@@ -559,4 +528,24 @@
     // --- SENARYO AKIŞI ---
     function startFireworksScenario() {
         animate();
-   
+        rocketInterval = setInterval(launchRocket, 900);
+        launchRocket(); 
+        
+        setTimeout(() => {
+            let msg1 = document.getElementById('msg1');
+            msg1.style.display = 'block';
+            setTimeout(() => { msg1.style.opacity = '1'; }, 50);
+        }, 4000);
+
+        setTimeout(() => {
+            let msg1 = document.getElementById('msg1');
+            msg1.style.opacity = '0';
+            clearInterval(rocketInterval);
+            
+            setTimeout(() => { msg1.style.display = 'none'; }, 2000);
+            setTimeout(launchBigRocket, 1500);
+        }, 12000);
+    }
+</script>
+</body>
+</html>
