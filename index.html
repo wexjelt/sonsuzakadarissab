@@ -21,36 +21,32 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             transition: opacity 0.5s;
+            display: block; /* Çakışmayı önlemek için flex kaldırıldı */
         }
 
         .instruction {
-            margin-top: 10vh;
+            margin-top: 12vh;
             font-size: 1.2rem;
             font-weight: 300;
             letter-spacing: 2px;
             color: rgba(255,255,255,0.8);
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
             animation: pulseText 2s infinite;
+            padding: 0 20px;
         }
 
         #lighter {
             position: absolute;
-            top: 65%; left: 35%;
+            top: 65%; left: 40%;
             width: 45px; height: 80px;
             background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%);
             border-radius: 8px;
             box-shadow: inset -2px -2px 6px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.6);
             cursor: grab;
             z-index: 25;
-            transition: transform 0.1s;
-            /* Ekranın kaymasını engellemek için */
-            touch-action: none; 
+            touch-action: none; /* Tarayıcının varsayılan hareketlerini tamamen engeller */
         }
-        #lighter:active { cursor: grabbing; transform: scale(0.95); }
         
         #lighter::before {
             content: ''; position: absolute;
@@ -98,6 +94,7 @@
         #fuse {
             position: absolute;
             bottom: 120px; left: 50%;
+            transform: translateX(-50%);
             width: 4px; height: 80px;
             background: #795548;
             border-radius: 2px;
@@ -181,7 +178,7 @@
 <body>
 
     <div id="stage2">
-        <div class="instruction">Ateşlemek için çakmağı fitile sürükle veya üzerine dokun!</div>
+        <div class="instruction">Ateşlemek için çakmağı sürükle veya üzerine bir kez dokun!</div>
         <div id="fuse"></div>
         <div id="firework-prop"></div>
         
@@ -214,7 +211,7 @@
                 startAmbientMusic();
             }
         } catch (e) {
-            console.log("Ses engellendi, görsel devam ediyor.");
+            console.log("Ses engellendi, görsel akış devam ediyor.");
         }
     }
 
@@ -288,29 +285,43 @@
         loop();
     }
 
-    // --- EN MODERN POINTER EVENTS SÜRÜKLEME SİSTEMİ ---
+    // --- KURŞUN GEÇİRMEZ KÜRESEL SÜRÜKLEME SİSTEMİ ---
     const lighter = document.getElementById('lighter');
     const fuse = document.getElementById('fuse');
     let isDragging = false;
-    let hasMoved = false; // Tıklama ile sürüklemeyi ayırt etmek için
+    let offsetX = 0;
+    let offsetY = 0;
+    let hasMoved = false;
 
+    // Dokunma/Tıklama anında mesafe farkını ve durumu kaydet
     lighter.addEventListener('pointerdown', (e) => {
         isDragging = true;
         hasMoved = false;
-        lighter.setPointerCapture(e.pointerId); // Parmağı/fareyi çakmağa kilitler, asla elden kaçmaz
         initAudio();
+        
+        const rect = lighter.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        lighter.style.cursor = 'grabbing';
     });
 
-    lighter.addEventListener('pointermove', (e) => {
+    // Takibi tüm ekranda (document) yapıyoruz, böylece elinden kaçması teknik olarak imkansız!
+    document.addEventListener('pointermove', (e) => {
         if (!isDragging) return;
         hasMoved = true;
-        
-        let x = e.clientX;
-        let y = e.clientY;
 
-        lighter.style.left = (x - 22) + 'px';
-        lighter.style.top = (y - 40) + 'px';
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
 
+        // Ekran dışına taşmayı engelle sınırla
+        x = Math.max(0, Math.min(window.innerWidth - 45, x));
+        y = Math.max(0, Math.min(window.innerHeight - 80, y));
+
+        lighter.style.left = x + 'px';
+        lighter.style.top = y + 'px';
+
+        // Çakmak alevi ile fitil çarpışma testi
         let fuseRect = fuse.getBoundingClientRect();
         let flameRect = document.getElementById('flame').getBoundingClientRect();
         
@@ -321,11 +332,12 @@
         }
     });
 
-    lighter.addEventListener('pointerup', (e) => {
+    document.addEventListener('pointerup', () => {
         if (isDragging) {
             isDragging = false;
-            lighter.releasePointerCapture(e.pointerId);
-            // KESİN ÇÖZÜM: Eğer kullanıcı sürükleyemediyse ve sadece dokunup bıraktıysa direkt ateşle!
+            lighter.style.cursor = 'grab';
+            
+            // EĞER SÜRÜKLENMEZSE (FALLBACK): Sadece dokunulduysa bile şov başlasın!
             if (!hasMoved) {
                 ignite();
             }
@@ -341,7 +353,7 @@
     let sandboxMode = false;
     
     function ignite() {
-        initAudio(); // Her ihtimale karşı ses motorunu tetikle
+        initAudio();
         document.getElementById('stage2').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('stage2').style.display = 'none';
@@ -547,14 +559,4 @@
     // --- SENARYO AKIŞI ---
     function startFireworksScenario() {
         animate();
-        rocketInterval = setInterval(launchRocket, 900);
-        launchRocket(); 
-        
-        setTimeout(() => {
-            let msg1 = document.getElementById('msg1');
-            msg1.style.display = 'block';
-            setTimeout(() => { msg1.style.opacity = '1'; }, 50);
-        }, 4000);
-
-        setTimeout(() => {
-            let msg1 = document.get
+   
