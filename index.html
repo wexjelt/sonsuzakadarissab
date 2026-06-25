@@ -129,9 +129,8 @@
             transition: opacity 2s ease-in-out;
         }
 
-        /* Final Yazısı (#İSSAB) - Ağır Ağır Dökülme Efekti */
+        /* Final Yazısı (#İSSAB) - JavaScript ile dinamik konumlandırılacak */
         #msg2 {
-            top: 0; /* Animasyon üstten başlatacak */
             font-size: 14vw;
             font-weight: 800;
             letter-spacing: 5px;
@@ -141,7 +140,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             text-shadow: 0 0 25px rgba(255, 0, 85, 0.6), 0 0 60px rgba(255, 0, 85, 0.4);
-            /* Patlamayla başlayıp 8 saniye süren ağır dökülme animasyonu */
+            /* Patlamayla başlayıp merkezden aşağı süzülen yeni animasyon */
             animation: grandDrizzle 8s cubic-bezier(0.1, 0.5, 0.3, 1) forwards;
         }
 
@@ -150,19 +149,20 @@
             50% { opacity: 1; }
         }
 
-        /* Yazının kıvılcımlarla birlikte aşağı süzülme animasyonu */
+        /* Yazının patlama noktasından (merkezden) büyüme ve süzülme animasyonu */
         @keyframes grandDrizzle {
             0% {
-                transform: translate(-50%, 10vh) scale(0.7);
+                transform: translate(-50%, -50%) scale(0.1);
                 opacity: 0;
-                filter: blur(10px);
+                filter: blur(15px);
             }
-            8% {
+            10% {
                 opacity: 1;
                 filter: blur(0px);
+                transform: translate(-50%, -50%) scale(1.1);
             }
             100% {
-                transform: translate(-50%, 35vh) scale(1.05);
+                transform: translate(-50%, calc(-50% + 20vh)) scale(1);
                 opacity: 0.7;
             }
         }
@@ -236,6 +236,15 @@
     let particles = [];
     let rocketInterval;
     
+    // Zenginleştirilmiş Yeni Renk Paleti (Neon Pembe, Mor, Camgöbeği, Canlı Yeşil, Altın Sarısı, Beyaz)
+    const colorPalettes = [
+        ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#ffffff'], // Pembe & Beyaz
+        ['#00f0ff', '#0072ff', '#7000ff', '#a100ff', '#ffffff'], // Safir & Neon Mavi
+        ['#00ff87', '#60efff', '#00ff66', '#00bcff', '#ffffff'], // Zümrüt Yeşil & Turkuaz
+        ['#ff007f', '#ff00ff', '#ff85e3', '#9b5de5', '#ffffff'], // Canlı Fuşya & Mor
+        ['#ffb703', '#fb8500', '#ffea00', '#ffaa00', '#ffffff']  // Altın Sarısı & Gün Batımı Turuncusu
+    ];
+
     function ignite() {
         document.getElementById('stage2').style.opacity = '0';
         setTimeout(() => {
@@ -257,16 +266,15 @@
             this.x = x; this.y = y;
             this.vx = vx; this.vy = vy;
             this.color = color;
-            this.type = type; // rocket, big_rocket, spark, big_spark
+            this.type = type; 
             this.alpha = 1;
             
-            // Normal kıvılcımlar ve büyük kıvılcımlar için sönme süreleri
             if (type === 'big_spark') {
-                this.decay = Math.random() * 0.003 + 0.004; // Çok daha uzun süre havada kalırlar
-                this.size = Math.random() * 5 + 3.5; // Büyük patlamanın parçacıkları daha iri
+                this.decay = Math.random() * 0.003 + 0.004; 
+                this.size = Math.random() * 5 + 3.5; 
             } else {
                 this.decay = Math.random() * 0.012 + 0.012;
-                this.size = type === 'rocket' || type === 'big_rocket' ? 4 : (Math.random() * 3.5 + 2.5); // Normal havai fişek boyutları büyütüldü
+                this.size = type === 'rocket' || type === 'big_rocket' ? 4 : (Math.random() * 3.5 + 2.5); 
             }
         }
         update() {
@@ -276,16 +284,15 @@
             if (this.type === 'spark') {
                 this.vx *= 0.93;
                 this.vy *= 0.93;
-                this.vy += 0.04; // Standart yerçekimi
+                this.vy += 0.04; 
                 this.alpha -= this.decay;
             } else if (this.type === 'big_spark') {
-                // AĞIR AĞIR DÖKÜLME FİZİĞİ: Sürtünme yüksek, yerçekimi çok az, süzülme etkisi fazla
                 this.vx *= 0.96;
                 this.vy *= 0.96;
-                this.vy += 0.012; // Ultra hafif yerçekimi (yavaşça düşme)
+                this.vy += 0.012; 
                 this.alpha -= this.decay;
             } else {
-                this.vy += 0.15; // Roket yükselme fiziği
+                this.vy += 0.15; 
             }
         }
         draw() {
@@ -301,9 +308,9 @@
     }
 
     function explodeShape(startX, startY, shapeType, isBig = false) {
-        const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff'];
+        // Her havai fişek patladığında rastgele farklı bir renk paleti seçilir
+        const currentPalette = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
         
-        // Boyutlar ve parçacık sayıları ciddi oranda artırıldı!
         const particleCount = isBig ? 650 : 180; 
         const scale = isBig ? 26 : 7.5; 
         const sparkType = isBig ? 'big_spark' : 'spark';
@@ -327,34 +334,35 @@
                 vy = Math.sin(t) * speed;
             }
 
-            // Hafif doğallık katmak için rastgele sapmalar
             vx += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
             vy += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
 
-            let color = colors[Math.floor(Math.random() * colors.length)];
+            let color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
             particles.push(new Particle(startX, startY, vx, vy, color, sparkType));
         }
 
-        // TAM PATLAMA ANINDA YAZIYI ORTAYA ÇIKAR
+        // DEVAASA HAVAI FİŞEK İÇİNDEN YAZIYI ÇIKARMA SİSTEMİ
         if (isBig) {
-            // Görkemli bir etki yaratmak için ekranı anlık beyazlat (Flaş efekti)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // #İSSAB yazısını tam o salisede aktifleştir (CSS animasyonu ağır dökülmeyi yönetecek)
             let msg2 = document.getElementById('msg2');
+            
+            // Yazıyı tam olarak havai fişeğin patladığı koordinatlara sabitler
+            msg2.style.left = startX + 'px';
+            msg2.style.top = startY + 'px';
             msg2.style.display = 'block';
         }
     }
 
     function launchRocket() {
         const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
-        const vy = -(Math.random() * 4 + 11); // Daha yükseğe fırlasınlar diye hız artırıldı
+        const vy = -(Math.random() * 4 + 11); 
         particles.push(new Particle(x, canvas.height, 0, vy, '#fff', 'rocket'));
     }
 
     function launchBigRocket() {
-        // Tam ortadan gökyüzünün zirvesine çıkacak devasa roket
+        // Tam ortadan gökyüzünün üst segmentlerine fırlatılan devasa roket
         particles.push(new Particle(canvas.width / 2, canvas.height, 0, -17, '#ff0055', 'big_rocket'));
     }
 
@@ -374,7 +382,7 @@
                 particles.splice(i, 1);
                 continue;
             } else if (p.type === 'big_rocket' && p.vy >= -0.5) {
-                explodeShape(p.x, p.y, 2, true); // 2 = Büyük küresel final
+                explodeShape(p.x, p.y, 2, true); 
                 particles.splice(i, 1);
                 continue;
             }
@@ -389,25 +397,21 @@
     // --- SENARYO ZAMANLAMALARI ---
     function startFireworksScenario() {
         animate();
-        rocketInterval = setInterval(launchRocket, 900); // Havai fişek sıklığı artırıldı
+        rocketInterval = setInterval(launchRocket, 900); 
         launchRocket(); 
         
-        // 4. saniyede uzun yazı yumuşakça belirir
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.display = 'block';
             setTimeout(() => { msg1.style.opacity = '1'; }, 50);
         }, 4000);
 
-        // 12. saniyede uzun yazı kaybolur ve küçük fişekler durur
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.opacity = '0';
             clearInterval(rocketInterval);
             
             setTimeout(() => { msg1.style.display = 'none'; }, 2000);
-            
-            // 13.5. saniyede büyük final roketi fırlatılır
             setTimeout(launchBigRocket, 1500);
         }, 12000);
     }
