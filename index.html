@@ -5,70 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sürpriz</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
         
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
+            /* Modern Gece Gökyüzü */
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #000000 100%);
             color: #fff;
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
             user-select: none;
         }
 
-        /* 1. Aşama: Çakmak ve Fitil (Doğrudan Başlangıç) */
+        /* Çakmak ve Fitil Alanı */
         #stage2 {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Piksel Çakmak Tasarımı */
+        .instruction {
+            margin-top: 10vh;
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.8);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: pulseText 2s infinite;
+        }
+
+        /* Modern Lighter (Çakmak) */
         #lighter {
             position: absolute;
-            top: 60%; left: 30%;
-            width: 30px; height: 50px;
-            background: #ff5500;
-            border: 4px solid #fff;
+            top: 65%; left: 30%;
+            width: 40px; height: 75px;
+            /* Metalik Görünüm */
+            background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%);
+            border-radius: 8px;
+            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.6);
             cursor: grab;
             z-index: 25;
+            transition: transform 0.1s;
         }
-        #lighter::after {
-            content: '';
-            position: absolute;
-            top: -15px; left: 5px;
-            width: 12px; height: 15px;
-            background: #ffcc00;
-            border-radius: 50% 50% 0 0;
+        #lighter:active { cursor: grabbing; transform: scale(0.95); }
+        
+        /* Gerçekçi Çakmak Kapağı */
+        #lighter::before {
+            content: ''; position: absolute;
+            top: -15px; left: 0;
+            width: 40px; height: 15px;
+            background: linear-gradient(135deg, #bdbdbd 0%, #757575 100%);
+            border-radius: 8px 8px 0 0;
+            transform-origin: bottom left;
+            transform: rotate(-45deg);
         }
 
-        /* Piksel Havai Fişek Roketi */
+        /* Parlayan Alev */
+        .flame {
+            position: absolute;
+            top: -35px; left: 10px;
+            width: 20px; height: 35px;
+            background: radial-gradient(circle at 50% 100%, #fff 0%, #ffeb3b 30%, #ff5722 70%, transparent 100%);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 20px #ff5722, 0 0 40px #ffeb3b;
+            animation: flicker 0.1s infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-1deg); opacity: 0.9; }
+            100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+        }
+
+        /* Havai Fişek Rampası ve Fitil */
         #firework-prop {
             position: absolute;
             bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            width: 40px; height: 80px;
-            background: #cc0000;
-            border: 4px solid #fff;
+            width: 30px; height: 100px;
+            background: linear-gradient(to right, #b71c1c, #d32f2f, #b71c1c);
+            border-radius: 3px 3px 0 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
         #firework-prop::before {
-            content: '';
-            position: absolute;
-            top: -20px; left: 0;
+            content: ''; position: absolute;
+            top: -25px; left: -5px;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 20px solid #fff;
+            border-bottom: 25px solid #ff5252;
         }
 
         #fuse {
             position: absolute;
-            bottom: 100px; left: 50%;
+            bottom: 120px; left: 50%;
             width: 4px; height: 80px;
-            background: dashed 4px #888;
+            background: #795548;
+            border-radius: 2px;
+            box-shadow: inset 1px 0 2px rgba(0,0,0,0.5);
         }
 
-        /* 2. Aşama: Animasyon */
         canvas {
             display: none;
             position: absolute;
@@ -76,41 +115,66 @@
             z-index: 1;
         }
 
-        /* Mesajlar */
+        /* Mesaj Stilleri */
         .message {
             display: none;
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            text-shadow: 3px 3px 0px #000;
             width: 90%;
-            line-height: 1.8;
+            line-height: 1.6;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
         }
 
         #msg1 {
-            font-size: 16px;
-            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
+        /* Final Yazısı (#İSSAB) - Neon Efekti */
         #msg2 {
-            font-size: 8vw;
-            color: #ff0055;
+            font-size: 15vw;
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: transparent;
+            -webkit-text-stroke: 2px #ff0055;
+            background: linear-gradient(45deg, #ff0055, #ff7eb3, #ff0055);
+            -webkit-background-clip: text;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 0, 85, 0.5), 0 0 50px rgba(255, 0, 85, 0.5);
+            animation: pulseNeon 1.5s infinite alternate;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes pulseNeon {
+            0% { text-shadow: 0 0 20px rgba(255, 0, 85, 0.5), 0 0 40px rgba(255, 0, 85, 0.3); transform: translate(-50%, -50%) scale(1); }
+            100% { text-shadow: 0 0 30px rgba(255, 0, 85, 0.8), 0 0 80px rgba(255, 0, 85, 0.6); transform: translate(-50%, -50%) scale(1.05); }
         }
 
         @media (min-width: 768px) {
-            #msg1 { font-size: 24px; width: 70%; }
-            #msg2 { font-size: 80px; }
+            #msg1 { font-size: 2.5rem; width: 70%; }
+            #msg2 { font-size: 8rem; }
         }
     </style>
 </head>
 <body>
 
     <div id="stage2">
-        <p style="margin-top: 50px;">Çakmağı fitile sürükle!</p>
+        <div class="instruction">Ateşlemek için alevi fitile sürükle</div>
         <div id="fuse"></div>
         <div id="firework-prop"></div>
-        <div id="lighter" onmousedown="startDrag(event)" ontouchstart="startDrag(event)"></div>
+        
+        <div id="lighter" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
+            <div class="flame" id="flame"></div>
+        </div>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -118,60 +182,66 @@
     <div id="msg1" class="message">
         seni göğe baktığında ki ay ve tüm yıldızlardan daha çok seviyorum
     </div>
+    
     <div id="msg2" class="message">
         #İSSAB
     </div>
 
 <script>
-    // --- ÇAKMAK VE FİTİL SÜRÜKLEME ---
+    // --- ÇAKMAK VE FİTİL KONTROLLERİ ---
     const lighter = document.getElementById('lighter');
     const fuse = document.getElementById('fuse');
     let isDragging = false;
 
     function startDrag(e) {
         isDragging = true;
-        lighter.style.cursor = 'grabbing';
     }
 
     document.addEventListener('mousemove', drag);
-    document.addEventListener('touchmove', drag);
+    document.addEventListener('touchmove', drag, {passive: false});
     document.addEventListener('mouseup', stopDrag);
     document.addEventListener('touchend', stopDrag);
 
     function drag(e) {
         if (!isDragging) return;
+        if(e.type === 'touchmove') e.preventDefault(); 
+        
         let x = e.clientX || (e.touches && e.touches[0].clientX);
         let y = e.clientY || (e.touches && e.touches[0].clientY);
         
-        lighter.style.left = (x - 15) + 'px';
-        lighter.style.top = (y - 25) + 'px';
+        // Çakmağın ortalanarak sürüklenmesi
+        lighter.style.left = (x - 20) + 'px';
+        lighter.style.top = (y - 35) + 'px';
 
         let fuseRect = fuse.getBoundingClientRect();
-        // Fitilin yanma kontrolü
-        if (x > fuseRect.left - 30 && x < fuseRect.right + 30 && y > fuseRect.top - 20 && y < fuseRect.bottom + 20) {
+        let flameRect = document.getElementById('flame').getBoundingClientRect();
+        
+        // Alev fitile değerse (Kesişim kontrolü)
+        if (flameRect.right > fuseRect.left && flameRect.left < fuseRect.right &&
+            flameRect.bottom > fuseRect.top && flameRect.top < fuseRect.bottom) {
             isDragging = false;
             ignite();
         }
     }
 
-    function stopDrag() {
-        isDragging = false;
-        lighter.style.cursor = 'grab';
-    }
+    function stopDrag() { isDragging = false; }
 
-    // --- MİNECRAFT KALP HAVAİ FİŞEKLERİ ---
+    // --- MODERN HAVAİ FİŞEK MOTORU ---
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
     let rocketInterval;
     
     function ignite() {
-        document.getElementById('stage2').style.display = 'none';
-        canvas.style.display = 'block';
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        startFireworksScenario();
+        // Çakmağı yavaşça kaybet ve animasyonu başlat
+        document.getElementById('stage2').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('stage2').style.display = 'none';
+            canvas.style.display = 'block';
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            startFireworksScenario();
+        }, 500);
     }
 
     function resizeCanvas() {
@@ -184,75 +254,103 @@
             this.x = x; this.y = y;
             this.vx = vx; this.vy = vy;
             this.color = color;
-            this.type = type; // rocket, big_rocket, spark, big_spark
-            this.life = 100 * lifeMultiplier;
-            this.maxLife = this.life;
-            this.size = (Math.random() * 4 + 4); // Kare pikseller
+            this.type = type; 
+            this.alpha = 1;
+            this.decay = (Math.random() * 0.015 + 0.015) / lifeMultiplier; // Modern yavaş sönme efekti
+            this.size = type === 'rocket' || type === 'big_rocket' ? 3 : (Math.random() * 2 + 1.5);
         }
         update() {
             this.x += this.vx;
             this.y += this.vy;
             
-            if (this.type === 'spark') {
-                this.vy += 0.03; 
-                this.life -= 1.5;
-            } else if (this.type === 'big_spark') {
-                this.vy += 0.05;
-                this.vx *= 0.98;
-                this.vy *= 0.98;
-                this.life -= 1;
+            if (this.type !== 'rocket' && this.type !== 'big_rocket') {
+                // Modern havada asılı kalma (sürtünme) ve yavaşça düşme fiziği
+                this.vx *= 0.92;
+                this.vy *= 0.92;
+                this.vy += 0.03; // Hafif yerçekimi
+                this.alpha -= this.decay;
             }
         }
         draw() {
-            ctx.globalAlpha = Math.max(0, this.life / this.maxLife);
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, this.alpha);
+            // Işık karışım modu ile neon parlama hissi (Modernleştirildi)
+            ctx.globalCompositeOperation = 'lighter'; 
             ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
     }
 
-    // Matematiksel Kalp Denklemi
-    function explodeHeart(startX, startY, isBig = false) {
-        const colors = ['#ff0033', '#ff3366', '#ff0055', '#ff99aa', '#ffffff'];
-        const scale = isBig ? 0.6 : 0.25; 
-        const step = isBig ? 0.05 : 0.1;
-        const sparkType = isBig ? 'big_spark' : 'spark';
-        const lifeMult = isBig ? 2 : 1;
+    // Modern Şekil Patlamaları
+    function explodeShape(startX, startY, shapeType, isBig = false) {
+        // shapeType: 0 = Kalp, 1 = Gül, 2 = Dev Yuvarlak (Final)
+        const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff'];
+        const particleCount = isBig ? 300 : 120;
+        const scale = isBig ? 15 : 4; 
+        const lifeMult = isBig ? 2.5 : 1;
 
-        for (let t = 0; t < Math.PI * 2; t += step) {
-            let x = 16 * Math.pow(Math.sin(t), 3);
-            let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-            
-            let vx = x * scale;
-            let vy = y * scale;
-            let color = colors[Math.floor(Math.random() * colors.length)];
-            
-            particles.push(new Particle(startX, startY, vx, vy, color, sparkType, lifeMult));
-            
-            if(Math.random() > 0.5) {
-                particles.push(new Particle(startX, startY, vx * 0.8, vy * 0.8, color, sparkType, lifeMult));
+        for (let i = 0; i < particleCount; i++) {
+            let t = Math.random() * Math.PI * 2;
+            let vx, vy;
+
+            if (shapeType === 0) {
+                // Kalp Şekli 
+                let x = 16 * Math.pow(Math.sin(t), 3);
+                let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                // Yayılma gücünü eşitlemek için normalizasyon
+                vx = x * (scale / 10);
+                vy = y * (scale / 10);
+            } else if (shapeType === 1) {
+                // Gül Şekli (5 yapraklı Rhodonea eğrisi)
+                let r = Math.sin(5 * t) * 12;
+                vx = r * Math.cos(t) * (scale / 6);
+                vy = -r * Math.sin(t) * (scale / 6);
+            } else {
+                // Devasa Final Patlaması (Küresel yayılım)
+                let speed = Math.random() * scale;
+                vx = Math.cos(t) * speed;
+                vy = Math.sin(t) * speed;
             }
+
+            // Hafif rastgelelik ekle ki çok kusursuz/yapay durmasın
+            vx += (Math.random() - 0.5) * (isBig ? 2 : 0.5);
+            vy += (Math.random() - 0.5) * (isBig ? 2 : 0.5);
+
+            let color = colors[Math.floor(Math.random() * colors.length)];
+            particles.push(new Particle(startX, startY, vx, vy, color, 'spark', lifeMult));
         }
-        
+
         if (isBig) {
+            // Büyük patlama esnasında ekranı hafif beyazlat (flaş efekti)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // #İSSAB yazısını muhteşem bir şekilde getir
             setTimeout(() => {
-                document.getElementById('msg2').style.display = 'block';
+                let msg2 = document.getElementById('msg2');
+                msg2.style.display = 'block';
+                setTimeout(() => { msg2.style.opacity = '1'; }, 100);
             }, 500);
         }
     }
 
     function launchRocket() {
-        const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
-        const vy = -(Math.random() * 4 + 8);
+        const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
+        const vy = -(Math.random() * 3 + 9);
         particles.push(new Particle(x, canvas.height, 0, vy, '#fff', 'rocket'));
     }
 
     function launchBigRocket() {
-        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -14, '#ff0055', 'big_rocket'));
+        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -15, '#ff0055', 'big_rocket'));
     }
 
     function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+        // Arkada iz bırakan hafif şeffaf ekran temizleme (Gökyüzü)
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         for (let i = particles.length - 1; i >= 0; i--) {
@@ -260,44 +358,51 @@
             p.update();
             p.draw();
 
+            // Roket zirveye ulaştıysa patlat
             if (p.type === 'rocket' && p.vy >= -1) {
-                explodeHeart(p.x, p.y, false);
+                // Rastgele Kalp (0) veya Gül (1) seç
+                let shape = Math.random() > 0.5 ? 0 : 1; 
+                explodeShape(p.x, p.y, shape, false);
                 particles.splice(i, 1);
                 continue;
             } else if (p.type === 'big_rocket' && p.vy >= -1) {
-                explodeHeart(p.x, p.y, true);
+                explodeShape(p.x, p.y, 2, true); // 2 = Devasa dairesel flaş
                 particles.splice(i, 1);
                 continue;
             }
 
-            if (p.life <= 0) {
+            if (p.alpha <= 0) {
                 particles.splice(i, 1);
             }
         }
         requestAnimationFrame(animate);
     }
 
-    // --- SENARYO AKIŞI ---
+    // --- ZAMANLANMIŞ SENARYO AKIŞI ---
     function startFireworksScenario() {
         animate();
-        rocketInterval = setInterval(launchRocket, 800);
-        launchRocket();
+        rocketInterval = setInterval(launchRocket, 1000);
+        launchRocket(); // İlkini beklemeden at
         
-        // 4 Saniye sonra romantik mesaj belirecek
+        // 4 Saniye sonra uzun ve romantik mesaj Fade In ile gelsin
         setTimeout(() => {
-            document.getElementById('msg1').style.display = 'block';
+            let msg1 = document.getElementById('msg1');
+            msg1.style.display = 'block';
+            setTimeout(() => { msg1.style.opacity = '1'; }, 50);
         }, 4000);
 
-        // 11 Saniye sonra mesaj gizlenecek ve final roketi atılacak
+        // 12 Saniye sonra mesaj kaybolsun, küçük havai fişekler dursun
         setTimeout(() => {
-            document.getElementById('msg1').style.display = 'none';
+            let msg1 = document.getElementById('msg1');
+            msg1.style.opacity = '0';
             clearInterval(rocketInterval);
             
-            // Büyük final roketi
-            setTimeout(launchBigRocket, 1000);
-        }, 11000);
+            setTimeout(() => { msg1.style.display = 'none'; }, 2000);
+            
+            // Büyük final roketi ateşlensin
+            setTimeout(launchBigRocket, 1500);
+        }, 12000);
     }
-
 </script>
 </body>
 </html>
