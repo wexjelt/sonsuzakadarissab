@@ -24,6 +24,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: opacity 0.5s;
         }
 
         .instruction {
@@ -111,24 +112,27 @@
         .message {
             display: none;
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            left: 50%;
             z-index: 10;
             width: 90%;
             line-height: 1.6;
-            opacity: 0;
-            transition: opacity 2s ease-in-out;
         }
 
         #msg1 {
+            top: 50%;
+            transform: translate(-50%, -50%);
             font-size: 1.5rem;
             font-weight: 300;
             color: #ffffff;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
         }
 
+        /* Final Yazısı (#İSSAB) - Ağır Ağır Dökülme Efekti */
         #msg2 {
-            font-size: 15vw;
+            top: 0; /* Animasyon üstten başlatacak */
+            font-size: 14vw;
             font-weight: 800;
             letter-spacing: 5px;
             color: transparent;
@@ -136,8 +140,9 @@
             background: linear-gradient(45deg, #ff0055, #ff7eb3, #ff0055);
             -webkit-background-clip: text;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(255, 0, 85, 0.5), 0 0 50px rgba(255, 0, 85, 0.5);
-            animation: pulseNeon 1.5s infinite alternate;
+            text-shadow: 0 0 25px rgba(255, 0, 85, 0.6), 0 0 60px rgba(255, 0, 85, 0.4);
+            /* Patlamayla başlayıp 8 saniye süren ağır dökülme animasyonu */
+            animation: grandDrizzle 8s cubic-bezier(0.1, 0.5, 0.3, 1) forwards;
         }
 
         @keyframes pulseText {
@@ -145,9 +150,21 @@
             50% { opacity: 1; }
         }
 
-        @keyframes pulseNeon {
-            0% { text-shadow: 0 0 20px rgba(255, 0, 85, 0.5), 0 0 40px rgba(255, 0, 85, 0.3); transform: translate(-50%, -50%) scale(1); }
-            100% { text-shadow: 0 0 30px rgba(255, 0, 85, 0.8), 0 0 80px rgba(255, 0, 85, 0.6); transform: translate(-50%, -50%) scale(1.05); }
+        /* Yazının kıvılcımlarla birlikte aşağı süzülme animasyonu */
+        @keyframes grandDrizzle {
+            0% {
+                transform: translate(-50%, 10vh) scale(0.7);
+                opacity: 0;
+                filter: blur(10px);
+            }
+            8% {
+                opacity: 1;
+                filter: blur(0px);
+            }
+            100% {
+                transform: translate(-50%, 35vh) scale(1.05);
+                opacity: 0.7;
+            }
         }
 
         @media (min-width: 768px) {
@@ -179,7 +196,7 @@
     </div>
 
 <script>
-    // --- ÇAKMAK VE FİTİL ---
+    // --- ÇAKMAK KONTROLLERİ ---
     const lighter = document.getElementById('lighter');
     const fuse = document.getElementById('fuse');
     let isDragging = false;
@@ -236,28 +253,39 @@
     }
 
     class Particle {
-        constructor(x, y, vx, vy, color, type, lifeMultiplier = 1) {
+        constructor(x, y, vx, vy, color, type) {
             this.x = x; this.y = y;
             this.vx = vx; this.vy = vy;
             this.color = color;
-            this.type = type; 
+            this.type = type; // rocket, big_rocket, spark, big_spark
             this.alpha = 1;
-            this.decay = (Math.random() * 0.015 + 0.015) / lifeMultiplier;
-            this.size = type === 'rocket' || type === 'big_rocket' ? 3 : (Math.random() * 2 + 1.5);
+            
+            // Normal kıvılcımlar ve büyük kıvılcımlar için sönme süreleri
+            if (type === 'big_spark') {
+                this.decay = Math.random() * 0.003 + 0.004; // Çok daha uzun süre havada kalırlar
+                this.size = Math.random() * 5 + 3.5; // Büyük patlamanın parçacıkları daha iri
+            } else {
+                this.decay = Math.random() * 0.012 + 0.012;
+                this.size = type === 'rocket' || type === 'big_rocket' ? 4 : (Math.random() * 3.5 + 2.5); // Normal havai fişek boyutları büyütüldü
+            }
         }
         update() {
             this.x += this.vx;
             this.y += this.vy;
             
-            if (this.type !== 'rocket' && this.type !== 'big_rocket') {
-                // Patlayan kıvılcımlar sürtünmeyle yavaşlar
-                this.vx *= 0.92;
-                this.vy *= 0.92;
-                this.vy += 0.03; 
+            if (this.type === 'spark') {
+                this.vx *= 0.93;
+                this.vy *= 0.93;
+                this.vy += 0.04; // Standart yerçekimi
+                this.alpha -= this.decay;
+            } else if (this.type === 'big_spark') {
+                // AĞIR AĞIR DÖKÜLME FİZİĞİ: Sürtünme yüksek, yerçekimi çok az, süzülme etkisi fazla
+                this.vx *= 0.96;
+                this.vy *= 0.96;
+                this.vy += 0.012; // Ultra hafif yerçekimi (yavaşça düşme)
                 this.alpha -= this.decay;
             } else {
-                // ROKETLERE YERÇEKİMİ EKLENDİ (Patlamama sorununun çözümü)
-                this.vy += 0.15; 
+                this.vy += 0.15; // Roket yükselme fiziği
             }
         }
         draw() {
@@ -274,9 +302,11 @@
 
     function explodeShape(startX, startY, shapeType, isBig = false) {
         const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff'];
-        const particleCount = isBig ? 400 : 120;
-        const scale = isBig ? 15 : 4; 
-        const lifeMult = isBig ? 2.5 : 1;
+        
+        // Boyutlar ve parçacık sayıları ciddi oranda artırıldı!
+        const particleCount = isBig ? 650 : 180; 
+        const scale = isBig ? 26 : 7.5; 
+        const sparkType = isBig ? 'big_spark' : 'spark';
 
         for (let i = 0; i < particleCount; i++) {
             let t = Math.random() * Math.PI * 2;
@@ -291,39 +321,41 @@
                 let r = Math.sin(5 * t) * 12;
                 vx = r * Math.cos(t) * (scale / 6);
                 vy = -r * Math.sin(t) * (scale / 6);
-            } else { // Final Flaş
+            } else { // Devasa Final Patlaması
                 let speed = Math.random() * scale;
                 vx = Math.cos(t) * speed;
                 vy = Math.sin(t) * speed;
             }
 
-            vx += (Math.random() - 0.5) * (isBig ? 3 : 0.5);
-            vy += (Math.random() - 0.5) * (isBig ? 3 : 0.5);
+            // Hafif doğallık katmak için rastgele sapmalar
+            vx += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
+            vy += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
 
             let color = colors[Math.floor(Math.random() * colors.length)];
-            particles.push(new Particle(startX, startY, vx, vy, color, 'spark', lifeMult));
+            particles.push(new Particle(startX, startY, vx, vy, color, sparkType));
         }
 
+        // TAM PATLAMA ANINDA YAZIYI ORTAYA ÇIKAR
         if (isBig) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            // Görkemli bir etki yaratmak için ekranı anlık beyazlat (Flaş efekti)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            setTimeout(() => {
-                let msg2 = document.getElementById('msg2');
-                msg2.style.display = 'block';
-                setTimeout(() => { msg2.style.opacity = '1'; }, 100);
-            }, 500);
+            // #İSSAB yazısını tam o salisede aktifleştir (CSS animasyonu ağır dökülmeyi yönetecek)
+            let msg2 = document.getElementById('msg2');
+            msg2.style.display = 'block';
         }
     }
 
     function launchRocket() {
         const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
-        const vy = -(Math.random() * 4 + 10);
+        const vy = -(Math.random() * 4 + 11); // Daha yükseğe fırlasınlar diye hız artırıldı
         particles.push(new Particle(x, canvas.height, 0, vy, '#fff', 'rocket'));
     }
 
     function launchBigRocket() {
-        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -16, '#ff0055', 'big_rocket'));
+        // Tam ortadan gökyüzünün zirvesine çıkacak devasa roket
+        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -17, '#ff0055', 'big_rocket'));
     }
 
     function animate() {
@@ -336,14 +368,13 @@
             p.update();
             p.draw();
 
-            // Roket zirveye ulaşınca (hızı düşünce) patla
-            if (p.type === 'rocket' && p.vy >= -1) {
+            if (p.type === 'rocket' && p.vy >= -0.5) {
                 let shape = Math.random() > 0.5 ? 0 : 1; 
                 explodeShape(p.x, p.y, shape, false);
                 particles.splice(i, 1);
                 continue;
-            } else if (p.type === 'big_rocket' && p.vy >= -1) {
-                explodeShape(p.x, p.y, 2, true);
+            } else if (p.type === 'big_rocket' && p.vy >= -0.5) {
+                explodeShape(p.x, p.y, 2, true); // 2 = Büyük küresel final
                 particles.splice(i, 1);
                 continue;
             }
@@ -355,17 +386,20 @@
         requestAnimationFrame(animate);
     }
 
+    // --- SENARYO ZAMANLAMALARI ---
     function startFireworksScenario() {
         animate();
-        rocketInterval = setInterval(launchRocket, 1000);
+        rocketInterval = setInterval(launchRocket, 900); // Havai fişek sıklığı artırıldı
         launchRocket(); 
         
+        // 4. saniyede uzun yazı yumuşakça belirir
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.display = 'block';
             setTimeout(() => { msg1.style.opacity = '1'; }, 50);
         }, 4000);
 
+        // 12. saniyede uzun yazı kaybolur ve küçük fişekler durur
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.opacity = '0';
@@ -373,6 +407,7 @@
             
             setTimeout(() => { msg1.style.display = 'none'; }, 2000);
             
+            // 13.5. saniyede büyük final roketi fırlatılır
             setTimeout(launchBigRocket, 1500);
         }, 12000);
     }
