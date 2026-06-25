@@ -10,7 +10,6 @@
         body {
             margin: 0;
             overflow: hidden;
-            /* Modern Gece Gökyüzü */
             background: radial-gradient(ellipse at bottom, #1b2735 0%, #000000 100%);
             color: #fff;
             font-family: 'Poppins', sans-serif;
@@ -18,7 +17,6 @@
             user-select: none;
         }
 
-        /* Çakmak ve Fitil Alanı */
         #stage2 {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -38,12 +36,10 @@
             animation: pulseText 2s infinite;
         }
 
-        /* Modern Lighter (Çakmak) */
         #lighter {
             position: absolute;
             top: 65%; left: 30%;
             width: 40px; height: 75px;
-            /* Metalik Görünüm */
             background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%);
             border-radius: 8px;
             box-shadow: inset -2px -2px 6px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.6);
@@ -53,7 +49,6 @@
         }
         #lighter:active { cursor: grabbing; transform: scale(0.95); }
         
-        /* Gerçekçi Çakmak Kapağı */
         #lighter::before {
             content: ''; position: absolute;
             top: -15px; left: 0;
@@ -64,7 +59,6 @@
             transform: rotate(-45deg);
         }
 
-        /* Parlayan Alev */
         .flame {
             position: absolute;
             top: -35px; left: 10px;
@@ -81,7 +75,6 @@
             100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
         }
 
-        /* Havai Fişek Rampası ve Fitil */
         #firework-prop {
             position: absolute;
             bottom: 20px; left: 50%;
@@ -115,7 +108,6 @@
             z-index: 1;
         }
 
-        /* Mesaj Stilleri */
         .message {
             display: none;
             position: absolute;
@@ -135,7 +127,6 @@
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
 
-        /* Final Yazısı (#İSSAB) - Neon Efekti */
         #msg2 {
             font-size: 15vw;
             font-weight: 800;
@@ -188,14 +179,12 @@
     </div>
 
 <script>
-    // --- ÇAKMAK VE FİTİL KONTROLLERİ ---
+    // --- ÇAKMAK VE FİTİL ---
     const lighter = document.getElementById('lighter');
     const fuse = document.getElementById('fuse');
     let isDragging = false;
 
-    function startDrag(e) {
-        isDragging = true;
-    }
+    function startDrag(e) { isDragging = true; }
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('touchmove', drag, {passive: false});
@@ -209,14 +198,12 @@
         let x = e.clientX || (e.touches && e.touches[0].clientX);
         let y = e.clientY || (e.touches && e.touches[0].clientY);
         
-        // Çakmağın ortalanarak sürüklenmesi
         lighter.style.left = (x - 20) + 'px';
         lighter.style.top = (y - 35) + 'px';
 
         let fuseRect = fuse.getBoundingClientRect();
         let flameRect = document.getElementById('flame').getBoundingClientRect();
         
-        // Alev fitile değerse (Kesişim kontrolü)
         if (flameRect.right > fuseRect.left && flameRect.left < fuseRect.right &&
             flameRect.bottom > fuseRect.top && flameRect.top < fuseRect.bottom) {
             isDragging = false;
@@ -226,14 +213,13 @@
 
     function stopDrag() { isDragging = false; }
 
-    // --- MODERN HAVAİ FİŞEK MOTORU ---
+    // --- HAVAİ FİŞEK MOTORU ---
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
     let rocketInterval;
     
     function ignite() {
-        // Çakmağı yavaşça kaybet ve animasyonu başlat
         document.getElementById('stage2').style.opacity = '0';
         setTimeout(() => {
             document.getElementById('stage2').style.display = 'none';
@@ -256,7 +242,7 @@
             this.color = color;
             this.type = type; 
             this.alpha = 1;
-            this.decay = (Math.random() * 0.015 + 0.015) / lifeMultiplier; // Modern yavaş sönme efekti
+            this.decay = (Math.random() * 0.015 + 0.015) / lifeMultiplier;
             this.size = type === 'rocket' || type === 'big_rocket' ? 3 : (Math.random() * 2 + 1.5);
         }
         update() {
@@ -264,17 +250,19 @@
             this.y += this.vy;
             
             if (this.type !== 'rocket' && this.type !== 'big_rocket') {
-                // Modern havada asılı kalma (sürtünme) ve yavaşça düşme fiziği
+                // Patlayan kıvılcımlar sürtünmeyle yavaşlar
                 this.vx *= 0.92;
                 this.vy *= 0.92;
-                this.vy += 0.03; // Hafif yerçekimi
+                this.vy += 0.03; 
                 this.alpha -= this.decay;
+            } else {
+                // ROKETLERE YERÇEKİMİ EKLENDİ (Patlamama sorununun çözümü)
+                this.vy += 0.15; 
             }
         }
         draw() {
             ctx.save();
             ctx.globalAlpha = Math.max(0, this.alpha);
-            // Işık karışım modu ile neon parlama hissi (Modernleştirildi)
             ctx.globalCompositeOperation = 'lighter'; 
             ctx.fillStyle = this.color;
             ctx.beginPath();
@@ -284,11 +272,9 @@
         }
     }
 
-    // Modern Şekil Patlamaları
     function explodeShape(startX, startY, shapeType, isBig = false) {
-        // shapeType: 0 = Kalp, 1 = Gül, 2 = Dev Yuvarlak (Final)
         const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff'];
-        const particleCount = isBig ? 300 : 120;
+        const particleCount = isBig ? 400 : 120;
         const scale = isBig ? 15 : 4; 
         const lifeMult = isBig ? 2.5 : 1;
 
@@ -296,39 +282,32 @@
             let t = Math.random() * Math.PI * 2;
             let vx, vy;
 
-            if (shapeType === 0) {
-                // Kalp Şekli 
+            if (shapeType === 0) { // Kalp
                 let x = 16 * Math.pow(Math.sin(t), 3);
                 let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-                // Yayılma gücünü eşitlemek için normalizasyon
                 vx = x * (scale / 10);
                 vy = y * (scale / 10);
-            } else if (shapeType === 1) {
-                // Gül Şekli (5 yapraklı Rhodonea eğrisi)
+            } else if (shapeType === 1) { // Gül
                 let r = Math.sin(5 * t) * 12;
                 vx = r * Math.cos(t) * (scale / 6);
                 vy = -r * Math.sin(t) * (scale / 6);
-            } else {
-                // Devasa Final Patlaması (Küresel yayılım)
+            } else { // Final Flaş
                 let speed = Math.random() * scale;
                 vx = Math.cos(t) * speed;
                 vy = Math.sin(t) * speed;
             }
 
-            // Hafif rastgelelik ekle ki çok kusursuz/yapay durmasın
-            vx += (Math.random() - 0.5) * (isBig ? 2 : 0.5);
-            vy += (Math.random() - 0.5) * (isBig ? 2 : 0.5);
+            vx += (Math.random() - 0.5) * (isBig ? 3 : 0.5);
+            vy += (Math.random() - 0.5) * (isBig ? 3 : 0.5);
 
             let color = colors[Math.floor(Math.random() * colors.length)];
             particles.push(new Particle(startX, startY, vx, vy, color, 'spark', lifeMult));
         }
 
         if (isBig) {
-            // Büyük patlama esnasında ekranı hafif beyazlat (flaş efekti)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // #İSSAB yazısını muhteşem bir şekilde getir
             setTimeout(() => {
                 let msg2 = document.getElementById('msg2');
                 msg2.style.display = 'block';
@@ -339,16 +318,15 @@
 
     function launchRocket() {
         const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
-        const vy = -(Math.random() * 3 + 9);
+        const vy = -(Math.random() * 4 + 10);
         particles.push(new Particle(x, canvas.height, 0, vy, '#fff', 'rocket'));
     }
 
     function launchBigRocket() {
-        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -15, '#ff0055', 'big_rocket'));
+        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -16, '#ff0055', 'big_rocket'));
     }
 
     function animate() {
-        // Arkada iz bırakan hafif şeffaf ekran temizleme (Gökyüzü)
         ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -358,15 +336,14 @@
             p.update();
             p.draw();
 
-            // Roket zirveye ulaştıysa patlat
+            // Roket zirveye ulaşınca (hızı düşünce) patla
             if (p.type === 'rocket' && p.vy >= -1) {
-                // Rastgele Kalp (0) veya Gül (1) seç
                 let shape = Math.random() > 0.5 ? 0 : 1; 
                 explodeShape(p.x, p.y, shape, false);
                 particles.splice(i, 1);
                 continue;
             } else if (p.type === 'big_rocket' && p.vy >= -1) {
-                explodeShape(p.x, p.y, 2, true); // 2 = Devasa dairesel flaş
+                explodeShape(p.x, p.y, 2, true);
                 particles.splice(i, 1);
                 continue;
             }
@@ -378,20 +355,17 @@
         requestAnimationFrame(animate);
     }
 
-    // --- ZAMANLANMIŞ SENARYO AKIŞI ---
     function startFireworksScenario() {
         animate();
         rocketInterval = setInterval(launchRocket, 1000);
-        launchRocket(); // İlkini beklemeden at
+        launchRocket(); 
         
-        // 4 Saniye sonra uzun ve romantik mesaj Fade In ile gelsin
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.display = 'block';
             setTimeout(() => { msg1.style.opacity = '1'; }, 50);
         }, 4000);
 
-        // 12 Saniye sonra mesaj kaybolsun, küçük havai fişekler dursun
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.opacity = '0';
@@ -399,7 +373,6 @@
             
             setTimeout(() => { msg1.style.display = 'none'; }, 2000);
             
-            // Büyük final roketi ateşlensin
             setTimeout(launchBigRocket, 1500);
         }, 12000);
     }
