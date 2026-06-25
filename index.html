@@ -2,102 +2,87 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sürpriz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
-        body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: 'Poppins', sans-serif; text-align: center; user-select: none; }
-        #stage2 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; display: flex; flex-direction: column; align-items: center; transition: opacity 0.5s; }
-        .instruction { margin-top: 10vh; font-size: 1.2rem; font-weight: 300; letter-spacing: 2px; color: rgba(255,255,255,0.8); animation: pulseText 2s infinite; }
-        #lighter { position: absolute; top: 65%; left: 30%; width: 40px; height: 75px; background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%); border-radius: 8px; cursor: grab; z-index: 25; }
-        .flame { position: absolute; top: -35px; left: 10px; width: 20px; height: 35px; background: radial-gradient(circle at 50% 100%, #fff 0%, #ffeb3b 30%, #ff5722 70%, transparent 100%); border-radius: 50% 50% 20% 20%; box-shadow: 0 0 20px #ff5722; animation: flicker 0.1s infinite alternate; }
-        #firework-prop { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 30px; height: 100px; background: #b71c1c; }
-        #fuse { position: absolute; bottom: 120px; left: 50%; width: 4px; height: 80px; background: #795548; }
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
-        #msg1 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: #fff; opacity: 0; transition: opacity 2s; z-index: 10; display: none; }
-        @keyframes pulseText { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes flicker { 0% { transform: scale(1) rotate(-1deg); } 100% { transform: scale(1.1) rotate(2deg); } }
+        body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: 'Poppins', sans-serif; }
+        #stage2 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s; }
+        #canvas { position: absolute; top: 0; left: 0; }
+        #msg1 { position: absolute; top: 40%; width: 80%; text-align: center; font-size: 1.8rem; opacity: 0; transition: opacity 2s; z-index: 10; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="stage2">
-        <div class="instruction">Ateşlemek için alevi fitile sürükle</div>
-        <div id="fuse"></div>
-        <div id="firework-prop"></div>
-        <div id="lighter" onmousedown="startDrag(event)" ontouchstart="startDrag(event)"><div class="flame" id="flame"></div></div>
+        <div style="font-size: 1.5rem; margin-bottom: 20px;">Ateşlemek için alevi fitile sürükle</div>
+        <div id="fuse" style="width: 4px; height: 50px; background: #555;"></div>
+        <div id="lighter" style="width: 40px; height: 60px; background: #888; cursor: pointer; position: relative;">
+            <div id="flame" style="position: absolute; top: -20px; left: 5px; width: 30px; height: 30px; background: radial-gradient(orange, red); border-radius: 50%; filter: blur(2px);"></div>
+        </div>
     </div>
 
     <canvas id="canvas"></canvas>
     <div id="msg1">seni göğe baktığında ki ay ve tüm yıldızlardan daha çok seviyorum</div>
 
 <script>
-    const lighter = document.getElementById('lighter'), fuse = document.getElementById('fuse');
-    let isDragging = false, particles = [];
     const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+    const lighter = document.getElementById('lighter'), flame = document.getElementById('flame');
+    let particles = [];
 
-    function startDrag(e) { isDragging = true; }
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', () => isDragging = false);
-
-    function drag(e) {
-        if (!isDragging) return;
-        let x = e.clientX, y = e.clientY;
-        lighter.style.left = (x - 20) + 'px';
-        lighter.style.top = (y - 35) + 'px';
-        let f = fuse.getBoundingClientRect(), fl = document.getElementById('flame').getBoundingClientRect();
-        if (fl.right > f.left && fl.left < f.right && fl.bottom > f.top && fl.top < f.bottom) {
-            isDragging = false;
-            ignite();
-        }
-    }
+    // Ateşleme mekaniği
+    lighter.onmousedown = () => {
+        document.onmousemove = (e) => {
+            lighter.style.left = e.clientX - 20 + 'px';
+            lighter.style.top = e.clientY - 30 + 'px';
+            if (e.clientY < 300) ignite();
+        };
+    };
+    document.onmouseup = () => document.onmousemove = null;
 
     function ignite() {
         document.getElementById('stage2').style.opacity = '0';
-        setTimeout(() => { document.getElementById('stage2').style.display = 'none'; startFireworksScenario(); }, 500);
+        setTimeout(() => { document.getElementById('stage2').style.display = 'none'; startShow(); }, 1000);
     }
 
     class Particle {
-        constructor(x, y, vx, vy, color, type, size = 3) {
-            this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.color = color;
-            this.type = type; this.alpha = 1; this.size = size; this.decay = Math.random() * 0.01 + 0.005;
+        constructor(x, y, color, speed, size) {
+            this.x = x; this.y = y; this.color = color;
+            this.vx = (Math.random() - 0.5) * speed;
+            this.vy = (Math.random() - 0.5) * speed;
+            this.alpha = 1; this.size = size;
         }
-        update() {
-            this.x += this.vx; this.y += this.vy;
-            if (this.type === 'text') { this.vy += 0.02; this.vx *= 0.98; this.vy *= 0.98; }
-            else { this.vy += 0.05; this.vx *= 0.95; this.vy *= 0.95; }
-            this.alpha -= this.decay;
-        }
-        draw() {
-            ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-        }
+        update() { this.x += this.vx; this.y += this.vy; this.vy += 0.02; this.alpha -= 0.008; }
+        draw() { ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); }
     }
 
-    function explodeText() {
-        ctx.fillStyle = "white"; ctx.font = "bold 120px Arial"; ctx.textAlign = "center";
-        ctx.fillText("#İSSAB", canvas.width / 2, canvas.height / 2);
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < data.data.length; i += 32) {
-            if (data.data[i + 3] > 128) {
-                let x = (i / 4) % canvas.width, y = Math.floor((i / 4) / canvas.width);
-                particles.push(new Particle(x, y, (Math.random()-0.5)*2, (Math.random()-0.5)*2, '#ff0055', 'text', 2));
-            }
-        }
-    }
-
-    function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        particles.forEach((p, i) => { p.update(); p.draw(); if (p.alpha <= 0) particles.splice(i, 1); });
-        requestAnimationFrame(animate);
-    }
-
-    function startFireworksScenario() {
+    function startShow() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        animate();
-        setTimeout(() => { document.getElementById('msg1').style.display = 'block'; setTimeout(() => document.getElementById('msg1').style.opacity = '1', 100); }, 2000);
-        setTimeout(() => { document.getElementById('msg1').style.opacity = '0'; explodeText(); }, 8000);
+        document.getElementById('msg1').style.opacity = '1';
+        
+        setTimeout(() => {
+            document.getElementById('msg1').style.opacity = '0';
+            // #İSSAB Yazısını Canvas'a yaz ve dağıt
+            ctx.fillStyle = "#ff7eb3";
+            ctx.font = "bold 150px 'Pinyon Script', cursive";
+            ctx.textAlign = "center";
+            ctx.fillText("#İSSAB", canvas.width/2, canvas.height/2);
+            
+            // Pikselleri al
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(let i=0; i<data.length; i+=80) {
+                if(data[i+3] > 128) {
+                    particles.push(new Particle((i/4)%canvas.width, Math.floor(i/(4*canvas.width)), '#ff7eb3', 3, 2));
+                }
+            }
+        }, 5000);
+
+        function loop() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0,0,canvas.width, canvas.height);
+            particles.forEach((p, i) => { p.update(); p.draw(); if(p.alpha <= 0) particles.splice(i, 1); });
+            requestAnimationFrame(loop);
+        }
+        loop();
     }
 </script>
 </body>
