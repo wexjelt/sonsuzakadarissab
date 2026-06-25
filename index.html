@@ -17,94 +17,31 @@
             user-select: none;
         }
 
-        #stage2 {
+        #intro-stage {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             transition: opacity 0.5s;
         }
 
-        .instruction {
-            margin-top: 12vh;
+        .start-btn {
+            padding: 15px 40px;
             font-size: 1.2rem;
-            font-weight: 300;
+            font-weight: 600;
             letter-spacing: 2px;
-            color: rgba(255,255,255,0.8);
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-            animation: pulseText 2s infinite;
-            padding: 0 20px;
-        }
-
-        #lighter {
-            position: absolute;
-            top: 65%; left: 25%;
-            width: 45px; height: 80px;
-            background: linear-gradient(135deg, #e0e0e0 0%, #9e9e9e 50%, #616161 100%);
-            border-radius: 8px;
-            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.6);
+            color: #fff;
+            background: linear-gradient(45deg, #ff0055, #ff7eb3);
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4);
             cursor: pointer;
-            z-index: 25;
-            /* Tıklandığında fitile otomatik gitmesi için pürüzsüz geçiş efekti */
-            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); 
+            transition: transform 0.2s;
         }
-        
-        /* Çakmak tıklandığında fitilin üzerine yerleşecek animasyon sınıfı */
-        #lighter.igniting {
-            left: calc(50% - 22px) !important;
-            top: calc(100% - 220px) !important;
-        }
-        
-        #lighter::before {
-            content: ''; position: absolute;
-            top: -15px; left: 0;
-            width: 45px; height: 15px;
-            background: linear-gradient(135deg, #bdbdbd 0%, #757575 100%);
-            border-radius: 8px 8px 0 0;
-            transform-origin: bottom left;
-            transform: rotate(-45deg);
-        }
-
-        .flame {
-            position: absolute;
-            top: -35px; left: 12px;
-            width: 20px; height: 35px;
-            background: radial-gradient(circle at 50% 100%, #fff 0%, #ffeb3b 30%, #ff5722 70%, transparent 100%);
-            border-radius: 50% 50% 20% 20%;
-            box-shadow: 0 0 20px #ff5722, 0 0 40px #ffeb3b;
-            animation: flicker 0.1s infinite alternate;
-            pointer-events: none;
-        }
-
-        @keyframes flicker {
-            0% { transform: scale(1) rotate(-1deg); opacity: 0.9; }
-            100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
-        }
-
-        #firework-prop {
-            position: absolute;
-            bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            width: 30px; height: 100px;
-            background: linear-gradient(to right, #b71c1c, #d32f2f, #b71c1c);
-            border-radius: 3px 3px 0 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-        }
-        #firework-prop::before {
-            content: ''; position: absolute;
-            top: -25px; left: -5px;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 25px solid #ff5252;
-        }
-
-        #fuse {
-            position: absolute;
-            bottom: 120px; left: 50%;
-            transform: translateX(-50%);
-            width: 4px; height: 80px;
-            background: #795548;
-            border-radius: 2px;
-            box-shadow: inset 1px 0 2px rgba(0,0,0,0.5);
+        .start-btn:active {
+            transform: scale(0.95);
         }
 
         canvas {
@@ -164,11 +101,6 @@
             transition: opacity 2s ease-in-out;
         }
 
-        @keyframes pulseText {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
         @keyframes grandDrizzle {
             0% { transform: translate(-50%, 10vh) scale(0.7); opacity: 0; filter: blur(10px); }
             8% { opacity: 1; filter: blur(0px); }
@@ -183,14 +115,8 @@
 </head>
 <body>
 
-    <div id="stage2">
-        <div class="instruction">Ateşlemek için çakmağa bir kez dokun!</div>
-        <div id="fuse"></div>
-        <div id="firework-prop"></div>
-        
-        <div id="lighter" id="lighterBtn">
-            <div class="flame" id="flame"></div>
-        </div>
+    <div id="intro-stage">
+        <button class="start-btn" id="startBtn">SÜRPRIZİ BAŞLAT</button>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -206,7 +132,7 @@
     <div id="sandbox-hint">Şimdi gökyüzü senin... Ekrana dokun!</div>
 
 <script>
-    // --- GÜVENLİ SES MOTORU ---
+    // --- SES MOTORU ---
     let audioCtx = null;
     let musicInterval = null;
 
@@ -217,7 +143,7 @@
                 startAmbientMusic();
             }
         } catch (e) {
-            console.log("Ses engellendi, görseller sorunsuz çalışacak.");
+            console.log("Ses pas geçildi.");
         }
     }
 
@@ -229,7 +155,7 @@
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(80, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.4);
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
@@ -243,26 +169,10 @@
             let gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(isBig ? 90 : 130, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + (isBig ? 0.8 : 0.4));
-            gain.gain.setValueAtTime(isBig ? 0.6 : 0.3, audioCtx.currentTime);
+            gain.gain.setValueAtTime(isBig ? 0.5 : 0.25, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (isBig ? 0.8 : 0.4));
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + (isBig ? 0.8 : 0.4));
-
-            let bufferSize = audioCtx.sampleRate * (isBig ? 0.6 : 0.3);
-            let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            let data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
-            let noise = audioCtx.createBufferSource();
-            noise.buffer = buffer;
-            let filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + (isBig ? 0.5 : 0.3));
-            let noiseGain = audioCtx.createGain();
-            noiseGain.gain.setValueAtTime(isBig ? 0.25 : 0.12, audioCtx.currentTime);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (isBig ? 0.6 : 0.3));
-            noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(audioCtx.destination);
-            noise.start();
         } catch(e){}
     }
 
@@ -276,43 +186,33 @@
                 osc.type = 'sine';
                 let randomNote = notes[Math.floor(Math.random() * notes.length)];
                 osc.frequency.setValueAtTime(randomNote, audioCtx.currentTime);
-                osc.detune.setValueAtTime(Math.random() * 8 - 4, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.07, audioCtx.currentTime + 0.3);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.8);
+                gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + 3.0);
+                osc.start(); osc.stop(audioCtx.currentTime + 2.7);
             } catch(e){}
         }
         function loop() {
             playNote();
-            musicInterval = setTimeout(loop, [500, 1000, 1500][Math.floor(Math.random() * 3)]);
+            musicInterval = setTimeout(loop, [600, 1200, 1800][Math.floor(Math.random() * 3)]);
         }
         loop();
     }
 
-    // --- ARIZASIZ TIKLAMA VE OTOMATİK HAREKET SİSTEMİ ---
-    const lighter = document.getElementById('lighter');
-    let dynamicTriggered = false;
-
-    // Hem tıklama hem dokunma için tek bir tetikleyici (Hata ihtimali sıfır)
-    function handleActivation() {
-        if (dynamicTriggered) return;
-        dynamicTriggered = true;
-
-        initAudio(); // Ses motorunu başlat
-        
-        // Çakmağı otomatik olarak fitilin üstüne uçur
-        lighter.classList.add('igniting');
-
-        // Çakmak fitile ulaştığı an (800ms sonra) sahneyi başlat
+    // --- TETİKLEME ---
+    document.getElementById('startBtn').addEventListener('click', () => {
+        initAudio();
+        document.getElementById('intro-stage').style.opacity = '0';
         setTimeout(() => {
-            ignite();
-        }, 800);
-    }
-
-    lighter.addEventListener('click', handleActivation);
-    lighter.addEventListener('touchstart', handleActivation, {passive: true});
+            document.getElementById('intro-stage').style.display = 'none';
+            canvas.style.display = 'block';
+            resizeCanvas();
+            initStars();
+            window.addEventListener('resize', resizeCanvas);
+            startFireworksScenario();
+        }, 500);
+    });
 
     // --- GÖRSEL MOTOR ---
     const canvas = document.getElementById('canvas');
@@ -321,18 +221,6 @@
     let stars = [];
     let rocketInterval;
     let sandboxMode = false;
-    
-    function ignite() {
-        document.getElementById('stage2').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('stage2').style.display = 'none';
-            canvas.style.display = 'block';
-            resizeCanvas();
-            initStars();
-            window.addEventListener('resize', resizeCanvas);
-            startFireworksScenario();
-        }, 500);
-    }
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -341,11 +229,11 @@
 
     function initStars() {
         stars = [];
-        for(let i=0; i<80; i++) {
+        for(let i=0; i<60; i++) {
             stars.push({
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight * 0.7,
-                size: Math.random() * 1.5,
+                size: Math.random() * 1.2,
                 alpha: Math.random(),
                 speed: Math.random() * 0.02 + 0.005
             });
@@ -374,36 +262,23 @@
             this.type = type;
             this.alpha = 1;
             this.targetY = targetY;
-            
-            if (type === 'big_spark') {
-                this.decay = Math.random() * 0.003 + 0.004;
-                this.size = Math.random() * 5.5 + 3.5;
-            } else if (type === 'trail') {
-                this.decay = Math.random() * 0.05 + 0.03;
-                this.size = Math.random() * 2 + 1;
-            } else {
-                this.decay = Math.random() * 0.012 + 0.012;
-                this.size = type === 'rocket' || type === 'big_rocket' ? 4 : (Math.random() * 4 + 2.5);
-            }
+            this.decay = type === 'trail' ? 0.05 : (type === 'big_spark' ? 0.006 : 0.015);
+            this.size = type === 'rocket' || type === 'big_rocket' ? 3.5 : (type === 'big_spark' ? 5 : 2.5);
         }
         update() {
             this.x += this.vx;
             this.y += this.vy;
             
-            if (this.type === 'spark') {
-                this.vx *= 0.93; this.vy *= 0.93;
-                this.vy += 0.04; this.alpha -= this.decay;
-            } else if (this.type === 'big_spark') {
-                this.vx *= 0.96; this.vy *= 0.96;
-                this.vy += 0.012;
-                this.alpha -= this.decay;
+            if (this.type === 'spark' || this.type === 'big_spark') {
+                this.vx *= 0.94; this.vy *= 0.94;
+                this.vy += 0.05; this.alpha -= this.decay;
             } else if (this.type === 'trail') {
                 this.vx *= 0.95; this.vy *= 0.95;
                 this.alpha -= this.decay;
             } else {
-                this.vy += 0.15;
-                if (Math.random() > 0.2) {
-                    particles.push(new Particle(this.x, this.y, (Math.random()-0.5)*1, (Math.random()*2), 'rgba(255,255,255,0.4)', 'trail'));
+                this.vy += 0.12;
+                if (Math.random() > 0.3) {
+                    particles.push(new Particle(this.x, this.y, (Math.random()-0.5)*0.5, 1, 'rgba(255,255,255,0.3)', 'trail'));
                 }
             }
         }
@@ -420,9 +295,9 @@
     }
 
     function explodeShape(startX, startY, shapeType, isBig = false) {
-        const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#ff99aa', '#fff', '#ffd700', '#fcf4a3'];
-        const particleCount = isBig ? 700 : 200; 
-        const scale = isBig ? 26 : 8.5; 
+        const colors = ['#ff2a5f', '#ff7eb3', '#ff0055', '#fff', '#ffd700'];
+        const particleCount = isBig ? 450 : 130; // Performans için sayıları optimize ettik
+        const scale = isBig ? 22 : 8; 
         const sparkType = isBig ? 'big_spark' : 'spark';
 
         playExplosionSound(isBig);
@@ -443,17 +318,11 @@
                 vx = Math.cos(t) * speed; vy = Math.sin(t) * speed;
             }
 
-            vx += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
-            vy += (Math.random() - 0.5) * (isBig ? 4 : 0.8);
-
             let color = colors[Math.floor(Math.random() * colors.length)];
-            particles.push(new Particle(startX, startY, vx, vy, color, sparkType));
+            particles.push(new Particle(startX, startY, vx + (Math.random()-0.5)*2, vy + (Math.random()-0.5)*2, color, sparkType));
         }
 
         if (isBig) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
             let msg2 = document.getElementById('msg2');
             msg2.style.display = 'block';
 
@@ -462,25 +331,25 @@
                 let hint = document.getElementById('sandbox-hint');
                 hint.style.display = 'block';
                 setTimeout(() => { hint.style.opacity = '1'; }, 100);
-            }, 5000);
+            }, 4000);
         }
     }
 
     function launchRocket() {
         const x = Math.random() * (canvas.width * 0.7) + (canvas.width * 0.15);
-        const vy = -(Math.random() * 4 + 11);
+        const vy = -(Math.random() * 3 + 11);
         playLaunchSound();
         particles.push(new Particle(x, canvas.height, 0, vy, '#fff', 'rocket'));
     }
 
     function launchBigRocket() {
         playLaunchSound();
-        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -17, '#ff0055', 'big_rocket'));
+        particles.push(new Particle(canvas.width / 2, canvas.height, 0, -16, '#ff0055', 'big_rocket'));
     }
 
     function animate() {
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         drawStars();
@@ -507,7 +376,6 @@
         requestAnimationFrame(animate);
     }
 
-    // --- INTERAKTIF TIKLAMA ---
     canvas.addEventListener('click', (e) => {
         if (!sandboxMode) return;
         triggerSandboxFirework(e.clientX, e.clientY);
@@ -521,21 +389,20 @@
     function triggerSandboxFirework(targetX, targetY) {
         playLaunchSound();
         let distanceY = canvas.height - targetY;
-        let vy = -Math.sqrt(2 * 0.15 * distanceY) * 0.9; 
+        let vy = -Math.sqrt(2 * 0.12 * distanceY) * 0.9; 
         particles.push(new Particle(targetX, canvas.height, 0, vy, '#fff', 'rocket', targetY));
     }
 
-    // --- SENARYO AKIŞI ---
     function startFireworksScenario() {
         animate();
-        rocketInterval = setInterval(launchRocket, 900);
+        rocketInterval = setInterval(launchRocket, 1000);
         launchRocket(); 
         
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
             msg1.style.display = 'block';
             setTimeout(() => { msg1.style.opacity = '1'; }, 50);
-        }, 4000);
+        }, 3500);
 
         setTimeout(() => {
             let msg1 = document.getElementById('msg1');
@@ -544,7 +411,7 @@
             
             setTimeout(() => { msg1.style.display = 'none'; }, 2000);
             setTimeout(launchBigRocket, 1500);
-        }, 12000);
+        }, 11000);
     }
 </script>
 </body>
